@@ -1,0 +1,45 @@
+{
+  "name": "@ridly/mobile-core",
+  "version": "0.1.0",
+  "description": "Core components, hooks, and types for RIDLY Mobile SDK",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-native": ">=0.74.0",
+    "react-native-safe-area-context": ">=4.0.0"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.3.0",
+    "@tanstack/react-query": "^5.0.0",
+    "react-hook-form": "^7.50.0",
+    "zod": "^3.22.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-safe-area-context": "~5.6.0",
+    "typescript": "^5.3.0"
+  },
+  "keywords": [
+    "react-native",
+    "e-commerce",
+    "mobile",
+    "sdk",
+    "ridly"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ridly-dev/ridly-mobile.git",
+    "directory": "packages/core"
+  }
+}

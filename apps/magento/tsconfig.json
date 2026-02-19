@@ -1,0 +1,20 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": ["./*"],
+      "@ridly/mobile-core": ["../../packages/core/src"],
+      "@ridly/mobile-core/*": ["../../packages/core/src/*"],
+      "@ridly/mobile-adapter-magento": ["../../packages/adapter-magento/src"],
+      "@ridly/mobile-adapter-magento/*": ["../../packages/adapter-magento/src/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ]
+}

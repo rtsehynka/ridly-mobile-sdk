@@ -1,0 +1,44 @@
+{
+  "name": "@ridly/mobile-adapter-magento",
+  "version": "0.1.0",
+  "description": "Magento 2 / Adobe Commerce adapter for RIDLY Mobile SDK",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@ridly/mobile-core": "workspace:*"
+  },
+  "dependencies": {
+    "graphql": "^16.12.0",
+    "graphql-request": "^7.4.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/typescript": "^4.0.0",
+    "@graphql-codegen/typescript-operations": "^4.0.0",
+    "@types/node": "^25.2.3",
+    "typescript": "^5.3.0",
+    "vitest": "^4.0.18"
+  },
+  "keywords": [
+    "magento",
+    "magento2",
+    "adobe-commerce",
+    "e-commerce",
+    "adapter",
+    "ridly"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ridly-dev/ridly-mobile.git",
+    "directory": "packages/adapter-magento"
+  }
+}
