@@ -61,6 +61,7 @@ export type {
   OrderItem,
   OrderStatus,
   OrderComment,
+  OrderTotals,
   ShipmentTracking,
   PlaceOrderResult,
 } from './order';

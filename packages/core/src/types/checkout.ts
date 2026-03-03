@@ -14,8 +14,11 @@ export interface ShippingMethod {
   methodCode: string;
   methodTitle: string;
   price: Money;
+  priceExclTax?: Money;
   description?: string;
   estimatedDelivery?: string; // e.g., "2-5 business days"
+  available?: boolean;
+  errorMessage?: string;
 }
 
 /**
@@ -26,8 +29,8 @@ export interface PaymentMethod {
   title: string;
   description?: string;
   icon?: string;
-  isOffline: boolean;
-  sortOrder: number;
+  isOffline?: boolean;
+  sortOrder?: number;
   /**
    * For complex gateways (Stripe, PayPal, etc.)
    * Use WebView checkout when true

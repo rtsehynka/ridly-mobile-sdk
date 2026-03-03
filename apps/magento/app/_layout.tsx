@@ -11,9 +11,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { ThemeProvider, ToastContainer } from '@ridly/mobile-core';
+import { ThemeProvider, ToastContainer, useConfigStore } from '@ridly/mobile-core';
 import type { ThemeConfig } from '@ridly/mobile-core';
-import { config } from '../lib/adapter';
+import { config, magentoAdapter } from '../lib/adapter';
 
 export {
   ErrorBoundary,
@@ -50,6 +50,31 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  const { initialize, isInitialized, isInitializing, initError } = useConfigStore();
+
+  // Initialize the SDK with the adapter
+  useEffect(() => {
+    const initSDK = async () => {
+      if (!isInitialized && !isInitializing) {
+        try {
+          await initialize(config as any, magentoAdapter);
+          console.log('SDK initialized successfully');
+        } catch (error) {
+          console.error('SDK initialization failed:', error);
+        }
+      }
+    };
+    initSDK();
+  }, [initialize, isInitialized, isInitializing]);
+
+  // Log initialization status for debugging
+  useEffect(() => {
+    console.log('SDK status:', { isInitialized, isInitializing, hasError: !!initError });
+    if (initError) {
+      console.error('Init error:', initError);
+    }
+  }, [isInitialized, isInitializing, initError]);
+
   // Cast theme config from JSON to the expected type
   const themeConfig = config.theme as ThemeConfig;
 

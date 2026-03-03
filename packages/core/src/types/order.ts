@@ -43,28 +43,35 @@ export interface ShipmentTracking {
 }
 
 /**
+ * Order totals
+ */
+export interface OrderTotals {
+  subtotal: Money;
+  discount?: Money;
+  shipping?: Money;
+  tax?: Money;
+  grandTotal: Money;
+}
+
+/**
  * Order entity
  */
 export interface Order {
   id: string;
   orderNumber: string;
   status: OrderStatus;
-  statusLabel: string;
+  statusLabel?: string;
   items: OrderItem[];
-  subtotal: Money;
-  discount?: Money;
-  shipping: Money;
-  tax: Money;
-  grandTotal: Money;
-  shippingAddress: Address;
-  billingAddress: Address;
-  shippingMethod: string;
-  shippingMethodLabel: string;
-  paymentMethod: string;
-  paymentMethodLabel: string;
+  totals: OrderTotals;
+  shippingAddress?: Address;
+  billingAddress?: Address;
+  shippingMethod?: string;
+  shippingMethodLabel?: string;
+  paymentMethod?: string;
+  paymentMethodLabel?: string;
   createdAt: string;
   updatedAt: string;
-  shipments?: ShipmentTracking[];
+  tracking?: ShipmentTracking[];
   comments?: OrderComment[];
 }
 
@@ -72,10 +79,10 @@ export interface Order {
  * Order comment/note
  */
 export interface OrderComment {
-  id: string;
-  content: string;
+  id?: string;
+  message: string;
   createdAt: string;
-  isCustomerNotified: boolean;
+  isCustomerNotified?: boolean;
 }
 
 /**

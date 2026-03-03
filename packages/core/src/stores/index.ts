@@ -11,14 +11,24 @@ export {
   type ToastState,
 } from './toastStore';
 
-// Auth store (Week 5)
-// export { useAuthStore } from './authStore';
+// Config store
+export {
+  useConfigStore,
+  getAdapter,
+  getConfig,
+  type ConfigState,
+} from './configStore';
 
-// Cart store (Week 5)
-// export { useCartStore } from './cartStore';
+// Auth store
+export { useAuthStore, type AuthState } from './authStore';
 
-// Wishlist store (Week 7)
-// export { useWishlistStore } from './wishlistStore';
+// Cart store
+export {
+  useCartStore,
+  isInCart,
+  getCartItem,
+  type CartState,
+} from './cartStore';
 
-// Config store (Week 1)
-// export { useConfigStore } from './configStore';
+// Wishlist store
+export { useWishlistStore, type WishlistState } from './wishlistStore';

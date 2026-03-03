@@ -61,6 +61,32 @@ import {
   CMS_PAGE_QUERY,
   CMS_BLOCKS_QUERY,
   COUNTRIES_QUERY,
+  // Checkout
+  SET_SHIPPING_ADDRESS_MUTATION,
+  SET_BILLING_ADDRESS_MUTATION,
+  GET_SHIPPING_METHODS_QUERY,
+  SET_SHIPPING_METHOD_MUTATION,
+  GET_PAYMENT_METHODS_QUERY,
+  SET_PAYMENT_METHOD_MUTATION,
+  PLACE_ORDER_MUTATION,
+  // Orders
+  CUSTOMER_ORDERS_QUERY,
+  ORDER_DETAIL_QUERY,
+  REORDER_MUTATION,
+  // Wishlist
+  GET_WISHLIST_QUERY,
+  ADD_TO_WISHLIST_MUTATION,
+  REMOVE_FROM_WISHLIST_MUTATION,
+  // Customer
+  UPDATE_CUSTOMER_MUTATION,
+  CHANGE_PASSWORD_MUTATION,
+  REQUEST_PASSWORD_RESET_MUTATION,
+  RESET_PASSWORD_MUTATION,
+  CREATE_ADDRESS_MUTATION,
+  UPDATE_ADDRESS_MUTATION,
+  DELETE_ADDRESS_MUTATION,
+  SUBSCRIBE_NEWSLETTER_MUTATION,
+  MERGE_CARTS_MUTATION,
 } from './graphql';
 import {
   transformProduct,
@@ -71,6 +97,11 @@ import {
   transformCountry,
   transformCmsPage,
   transformCmsBlock,
+  transformOrder,
+  transformShippingMethod,
+  transformPaymentMethod,
+  transformWishlistItem,
+  transformAddress,
 } from './transformers';
 
 /**
@@ -513,9 +544,17 @@ export class MagentoAdapter implements ECommerceAdapter {
     return this.getCart();
   }
 
-  async mergeGuestCart(_guestCartId: string): Promise<Cart> {
-    // TODO: Implement cart merging
-    throw new Error('Not implemented: mergeGuestCart');
+  async mergeGuestCart(guestCartId: string): Promise<Cart> {
+    if (!this.cartId) {
+      throw new Error('No customer cart found');
+    }
+
+    await this.client.query(MERGE_CARTS_MUTATION, {
+      sourceCartId: guestCartId,
+      destinationCartId: this.cartId,
+    });
+
+    return this.getCart();
   }
 
   // ============================================
@@ -562,14 +601,18 @@ export class MagentoAdapter implements ECommerceAdapter {
     throw new Error('Not implemented: refreshToken - Magento uses long-lived tokens');
   }
 
-  async requestPasswordReset(_email: string): Promise<void> {
-    // TODO: Implement password reset
-    throw new Error('Not implemented: requestPasswordReset');
+  async requestPasswordReset(email: string): Promise<void> {
+    await this.client.query(REQUEST_PASSWORD_RESET_MUTATION, { email });
   }
 
-  async resetPassword(_token: string, _newPassword: string): Promise<void> {
-    // TODO: Implement password reset
-    throw new Error('Not implemented: resetPassword');
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    // Note: Magento requires email for password reset
+    // The token should contain the email or be passed separately
+    await this.client.query(RESET_PASSWORD_MUTATION, {
+      email: '', // Should be passed from the reset link
+      resetPasswordToken: token,
+      newPassword,
+    });
   }
 
   async isAuthenticated(): Promise<boolean> {
@@ -585,14 +628,28 @@ export class MagentoAdapter implements ECommerceAdapter {
     return transformCustomer(response.customer);
   }
 
-  async updateCustomer(_data: CustomerUpdateInput): Promise<Customer> {
-    // TODO: Implement customer update
-    throw new Error('Not implemented: updateCustomer');
+  async updateCustomer(data: CustomerUpdateInput): Promise<Customer> {
+    const input: any = {};
+
+    if (data.firstName) input.firstname = data.firstName;
+    if (data.lastName) input.lastname = data.lastName;
+    if (data.dateOfBirth) input.date_of_birth = data.dateOfBirth;
+    if (data.gender) {
+      input.gender = data.gender === 'male' ? 1 : data.gender === 'female' ? 2 : 3;
+    }
+    if (data.isSubscribedToNewsletter !== undefined) {
+      input.is_subscribed = data.isSubscribedToNewsletter;
+    }
+
+    await this.client.query(UPDATE_CUSTOMER_MUTATION, { input });
+    return this.getCustomer();
   }
 
-  async changePassword(_data: ChangePasswordInput): Promise<void> {
-    // TODO: Implement password change
-    throw new Error('Not implemented: changePassword');
+  async changePassword(data: ChangePasswordInput): Promise<void> {
+    await this.client.query(CHANGE_PASSWORD_MUTATION, {
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
+    });
   }
 
   async getAddresses(): Promise<Address[]> {
@@ -600,53 +657,191 @@ export class MagentoAdapter implements ECommerceAdapter {
     return customer.addresses || [];
   }
 
-  async addAddress(_address: AddressInput): Promise<Address> {
-    // TODO: Implement address management
-    throw new Error('Not implemented: addAddress');
+  async addAddress(address: AddressInput): Promise<Address> {
+    const input = {
+      firstname: address.firstName,
+      lastname: address.lastName,
+      company: address.company,
+      street: address.street,
+      city: address.city,
+      region: address.regionCode ? { region_code: address.regionCode } : undefined,
+      postcode: address.postcode,
+      country_code: address.countryCode,
+      telephone: address.phone,
+      default_shipping: address.isDefaultShipping || false,
+      default_billing: address.isDefaultBilling || false,
+    };
+
+    const response = await this.client.query<{ createCustomerAddress: any }>(
+      CREATE_ADDRESS_MUTATION,
+      { input }
+    );
+
+    return transformAddress(response.createCustomerAddress);
   }
 
-  async updateAddress(_id: string, _address: Partial<AddressInput>): Promise<Address> {
-    throw new Error('Not implemented: updateAddress');
+  async updateAddress(id: string, address: Partial<AddressInput>): Promise<Address> {
+    const input: any = {};
+
+    if (address.firstName) input.firstname = address.firstName;
+    if (address.lastName) input.lastname = address.lastName;
+    if (address.company !== undefined) input.company = address.company;
+    if (address.street) input.street = address.street;
+    if (address.city) input.city = address.city;
+    if (address.regionCode) input.region = { region_code: address.regionCode };
+    if (address.postcode) input.postcode = address.postcode;
+    if (address.countryCode) input.country_code = address.countryCode;
+    if (address.phone !== undefined) input.telephone = address.phone;
+    if (address.isDefaultShipping !== undefined) input.default_shipping = address.isDefaultShipping;
+    if (address.isDefaultBilling !== undefined) input.default_billing = address.isDefaultBilling;
+
+    const response = await this.client.query<{ updateCustomerAddress: any }>(
+      UPDATE_ADDRESS_MUTATION,
+      { id: parseInt(id, 10), input }
+    );
+
+    return transformAddress(response.updateCustomerAddress);
   }
 
-  async deleteAddress(_id: string): Promise<void> {
-    throw new Error('Not implemented: deleteAddress');
+  async deleteAddress(id: string): Promise<void> {
+    await this.client.query(DELETE_ADDRESS_MUTATION, { id: parseInt(id, 10) });
   }
 
   // ============================================
   // CHECKOUT
   // ============================================
 
-  async setShippingAddress(_address: AddressInput): Promise<void> {
-    throw new Error('Not implemented: setShippingAddress');
+  async setShippingAddress(address: AddressInput): Promise<void> {
+    if (!this.cartId) {
+      await this.getCart();
+    }
+
+    const cartAddress = {
+      firstname: address.firstName,
+      lastname: address.lastName,
+      company: address.company,
+      street: address.street,
+      city: address.city,
+      region: address.regionCode,
+      postcode: address.postcode,
+      country_code: address.countryCode,
+      telephone: address.phone || '',
+    };
+
+    await this.client.query(SET_SHIPPING_ADDRESS_MUTATION, {
+      cartId: this.cartId,
+      address: cartAddress,
+    });
   }
 
-  async setBillingAddress(_address: AddressInput): Promise<void> {
-    throw new Error('Not implemented: setBillingAddress');
+  async setBillingAddress(address: AddressInput): Promise<void> {
+    if (!this.cartId) {
+      await this.getCart();
+    }
+
+    const cartAddress = {
+      firstname: address.firstName,
+      lastname: address.lastName,
+      company: address.company,
+      street: address.street,
+      city: address.city,
+      region: address.regionCode,
+      postcode: address.postcode,
+      country_code: address.countryCode,
+      telephone: address.phone || '',
+    };
+
+    await this.client.query(SET_BILLING_ADDRESS_MUTATION, {
+      cartId: this.cartId,
+      address: cartAddress,
+      sameAsShipping: false,
+    });
   }
 
   async setBillingSameAsShipping(): Promise<void> {
-    throw new Error('Not implemented: setBillingSameAsShipping');
+    if (!this.cartId) {
+      await this.getCart();
+    }
+
+    await this.client.query(SET_BILLING_ADDRESS_MUTATION, {
+      cartId: this.cartId,
+      address: {},
+      sameAsShipping: true,
+    });
   }
 
   async getShippingMethods(): Promise<ShippingMethod[]> {
-    throw new Error('Not implemented: getShippingMethods');
+    if (!this.cartId) {
+      throw new Error('No cart found. Set shipping address first.');
+    }
+
+    const response = await this.client.query<{
+      cart: {
+        shipping_addresses: Array<{
+          available_shipping_methods: any[];
+        }>;
+      };
+    }>(GET_SHIPPING_METHODS_QUERY, { cartId: this.cartId });
+
+    const methods = response.cart.shipping_addresses[0]?.available_shipping_methods || [];
+    return methods.filter((m: any) => m.available).map(transformShippingMethod);
   }
 
-  async setShippingMethod(_carrierCode: string, _methodCode: string): Promise<Cart> {
-    throw new Error('Not implemented: setShippingMethod');
+  async setShippingMethod(carrierCode: string, methodCode: string): Promise<Cart> {
+    if (!this.cartId) {
+      throw new Error('No cart found');
+    }
+
+    await this.client.query(SET_SHIPPING_METHOD_MUTATION, {
+      cartId: this.cartId,
+      carrierCode,
+      methodCode,
+    });
+
+    return this.getCart();
   }
 
   async getPaymentMethods(): Promise<PaymentMethod[]> {
-    throw new Error('Not implemented: getPaymentMethods');
+    if (!this.cartId) {
+      throw new Error('No cart found');
+    }
+
+    const response = await this.client.query<{
+      cart: {
+        available_payment_methods: any[];
+      };
+    }>(GET_PAYMENT_METHODS_QUERY, { cartId: this.cartId });
+
+    return response.cart.available_payment_methods.map(transformPaymentMethod);
   }
 
-  async setPaymentMethod(_code: string): Promise<void> {
-    throw new Error('Not implemented: setPaymentMethod');
+  async setPaymentMethod(code: string): Promise<void> {
+    if (!this.cartId) {
+      throw new Error('No cart found');
+    }
+
+    await this.client.query(SET_PAYMENT_METHOD_MUTATION, {
+      cartId: this.cartId,
+      paymentCode: code,
+    });
   }
 
   async placeOrder(): Promise<PlaceOrderResult> {
-    throw new Error('Not implemented: placeOrder');
+    if (!this.cartId) {
+      throw new Error('No cart found');
+    }
+
+    const response = await this.client.query<{
+      placeOrder: { order: { order_number: string } };
+    }>(PLACE_ORDER_MUTATION, { cartId: this.cartId });
+
+    // Clear cart ID after placing order
+    this.cartId = null;
+
+    return {
+      orderId: response.placeOrder.order.order_number,
+      orderNumber: response.placeOrder.order.order_number,
+    };
   }
 
   // ============================================
@@ -656,42 +851,134 @@ export class MagentoAdapter implements ECommerceAdapter {
   async getOrders(page?: number, pageSize?: number): Promise<PaginatedResult<Order>> {
     const actualPage = page || 1;
     const actualPageSize = pageSize || 10;
-    // TODO: Implement orders query
+
+    const response = await this.client.query<{
+      customer: {
+        orders: {
+          total_count: number;
+          items: any[];
+          page_info: { current_page: number; page_size: number; total_pages: number };
+        };
+      };
+    }>(CUSTOMER_ORDERS_QUERY, {
+      pageSize: actualPageSize,
+      currentPage: actualPage,
+    });
+
+    const orders = response.customer.orders;
+
     return {
-      items: [],
-      total: 0,
+      items: orders.items.map(transformOrder),
+      total: orders.total_count,
       page: actualPage,
       pageSize: actualPageSize,
-      hasMore: false,
+      hasMore: actualPage < orders.page_info.total_pages,
     };
   }
 
-  async getOrder(_id: string): Promise<Order> {
-    throw new Error('Not implemented: getOrder');
+  async getOrder(id: string): Promise<Order> {
+    const response = await this.client.query<{
+      customer: {
+        orders: {
+          items: any[];
+        };
+      };
+    }>(ORDER_DETAIL_QUERY, { orderNumber: id });
+
+    if (!response.customer.orders.items.length) {
+      throw new Error(`Order not found: ${id}`);
+    }
+
+    return transformOrder(response.customer.orders.items[0]);
   }
 
-  async reorder(_orderId: string): Promise<Cart> {
-    throw new Error('Not implemented: reorder');
+  async reorder(orderId: string): Promise<Cart> {
+    await this.client.query(REORDER_MUTATION, { orderNumber: orderId });
+    return this.getCart();
   }
 
   // ============================================
   // WISHLIST
   // ============================================
 
+  private wishlistId: string | null = null;
+
+  private async getWishlistId(): Promise<string> {
+    if (this.wishlistId) return this.wishlistId;
+
+    const response = await this.client.query<{
+      customer: {
+        wishlists: Array<{ id: string }>;
+      };
+    }>(GET_WISHLIST_QUERY);
+
+    const firstWishlist = response.customer.wishlists[0];
+    if (firstWishlist) {
+      this.wishlistId = firstWishlist.id;
+      return this.wishlistId;
+    }
+
+    throw new Error('No wishlist found');
+  }
+
   async getWishlist(): Promise<WishlistItem[]> {
-    throw new Error('Not implemented: getWishlist');
+    const response = await this.client.query<{
+      customer: {
+        wishlists: Array<{
+          id: string;
+          items_v2: {
+            items: any[];
+          };
+        }>;
+      };
+    }>(GET_WISHLIST_QUERY);
+
+    const firstWishlist = response.customer.wishlists[0];
+    if (!firstWishlist) {
+      return [];
+    }
+
+    this.wishlistId = firstWishlist.id;
+    return firstWishlist.items_v2.items.map(transformWishlistItem);
   }
 
-  async addToWishlist(_productId: string): Promise<void> {
-    throw new Error('Not implemented: addToWishlist');
+  async addToWishlist(productId: string): Promise<void> {
+    const wishlistId = await this.getWishlistId();
+
+    await this.client.query(ADD_TO_WISHLIST_MUTATION, {
+      wishlistId,
+      sku: productId, // productId should be SKU for Magento
+    });
   }
 
-  async removeFromWishlist(_itemId: string): Promise<void> {
-    throw new Error('Not implemented: removeFromWishlist');
+  async removeFromWishlist(itemId: string): Promise<void> {
+    const wishlistId = await this.getWishlistId();
+
+    await this.client.query(REMOVE_FROM_WISHLIST_MUTATION, {
+      wishlistId,
+      itemIds: [itemId],
+    });
   }
 
-  async moveWishlistItemToCart(_itemId: string): Promise<Cart> {
-    throw new Error('Not implemented: moveWishlistItemToCart');
+  async moveWishlistItemToCart(itemId: string): Promise<Cart> {
+    // For Magento, we need to get the product from wishlist and add to cart manually
+    const wishlist = await this.getWishlist();
+    const item = wishlist.find((i) => i.id === itemId);
+
+    if (!item) {
+      throw new Error('Wishlist item not found');
+    }
+
+    // Add to cart
+    await this.addToCart({
+      productId: item.product.sku,
+      quantity: 1,
+    });
+
+    // Remove from wishlist
+    await this.removeFromWishlist(itemId);
+
+    return this.getCart();
   }
 
   // ============================================
@@ -728,8 +1015,7 @@ export class MagentoAdapter implements ECommerceAdapter {
   // NEWSLETTER
   // ============================================
 
-  async subscribeToNewsletter(_email: string): Promise<void> {
-    // TODO: Implement newsletter subscription
-    throw new Error('Not implemented: subscribeToNewsletter');
+  async subscribeToNewsletter(email: string): Promise<void> {
+    await this.client.query(SUBSCRIBE_NEWSLETTER_MUTATION, { email });
   }
 }

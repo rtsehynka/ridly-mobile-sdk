@@ -21,6 +21,12 @@ import type {
   CmsPage,
   CmsBlock,
   Country,
+  Order,
+  OrderItem,
+  OrderStatus,
+  ShippingMethod,
+  PaymentMethod,
+  WishlistItem,
 } from '@ridly/mobile-core';
 
 // ============================================
@@ -425,5 +431,226 @@ export function transformCmsBlock(magentoCmsBlock: {
     identifier: magentoCmsBlock.identifier,
     title: magentoCmsBlock.title,
     content: magentoCmsBlock.content,
+  };
+}
+
+// ============================================
+// Order Transformers
+// ============================================
+
+interface MagentoOrder {
+  id: string;
+  order_number: string;
+  order_date: string;
+  status: string;
+  comments?: Array<{ timestamp: string; message: string }>;
+  total: {
+    grand_total: MagentoMoney;
+    subtotal: MagentoMoney;
+    total_shipping: MagentoMoney;
+    total_tax: MagentoMoney;
+    discounts?: Array<{ amount: MagentoMoney; label: string }>;
+  };
+  items: Array<{
+    product_name: string;
+    product_sku: string;
+    quantity_ordered: number;
+    quantity_shipped?: number;
+    quantity_canceled?: number;
+    quantity_refunded?: number;
+    product_sale_price: MagentoMoney;
+    product_url_key?: string;
+  }>;
+  shipping_address?: {
+    firstname: string;
+    lastname: string;
+    street: string[];
+    city: string;
+    region?: string;
+    postcode: string;
+    country_code: string;
+    telephone?: string;
+  };
+  billing_address?: {
+    firstname: string;
+    lastname: string;
+    street: string[];
+    city: string;
+    region?: string;
+    postcode: string;
+    country_code: string;
+    telephone?: string;
+  };
+  shipping_method?: string;
+  payment_methods?: Array<{ name: string; type: string }>;
+  shipments?: Array<{
+    id: string;
+    number: string;
+    tracking?: Array<{ carrier: string; number: string; title: string }>;
+    items?: Array<{ product_name: string; quantity_shipped: number }>;
+  }>;
+}
+
+function mapOrderStatus(magentoStatus: string): OrderStatus {
+  const statusMap: Record<string, OrderStatus> = {
+    pending: 'pending',
+    pending_payment: 'pending',
+    processing: 'processing',
+    complete: 'complete',
+    closed: 'complete',
+    canceled: 'canceled',
+    holded: 'on_hold',
+    payment_review: 'pending',
+  };
+  return statusMap[magentoStatus] || 'pending';
+}
+
+export function transformOrder(magentoOrder: MagentoOrder): Order {
+  const items: OrderItem[] = magentoOrder.items.map((item) => ({
+    id: `${magentoOrder.id}-${item.product_sku}`,
+    productId: item.product_sku,
+    sku: item.product_sku,
+    name: item.product_name,
+    quantity: item.quantity_ordered,
+    price: transformMoney(item.product_sale_price),
+    total: {
+      amount: item.product_sale_price.value * item.quantity_ordered,
+      currency: item.product_sale_price.currency,
+    },
+    image: undefined, // Not available in order query
+  }));
+
+  // Transform shipping address
+  const shippingAddress = magentoOrder.shipping_address
+    ? {
+        id: 'shipping',
+        firstName: magentoOrder.shipping_address.firstname,
+        lastName: magentoOrder.shipping_address.lastname,
+        street: magentoOrder.shipping_address.street,
+        city: magentoOrder.shipping_address.city,
+        region: magentoOrder.shipping_address.region,
+        postcode: magentoOrder.shipping_address.postcode,
+        countryCode: magentoOrder.shipping_address.country_code,
+        phone: magentoOrder.shipping_address.telephone,
+        isDefaultShipping: false,
+        isDefaultBilling: false,
+      }
+    : undefined;
+
+  // Transform billing address
+  const billingAddress = magentoOrder.billing_address
+    ? {
+        id: 'billing',
+        firstName: magentoOrder.billing_address.firstname,
+        lastName: magentoOrder.billing_address.lastname,
+        street: magentoOrder.billing_address.street,
+        city: magentoOrder.billing_address.city,
+        region: magentoOrder.billing_address.region,
+        postcode: magentoOrder.billing_address.postcode,
+        countryCode: magentoOrder.billing_address.country_code,
+        phone: magentoOrder.billing_address.telephone,
+        isDefaultShipping: false,
+        isDefaultBilling: false,
+      }
+    : undefined;
+
+  // Transform shipments to tracking info
+  const tracking =
+    magentoOrder.shipments?.flatMap(
+      (shipment) =>
+        shipment.tracking?.map((t) => ({
+          carrier: t.carrier,
+          trackingNumber: t.number,
+          title: t.title,
+        })) || []
+    ) || [];
+
+  return {
+    id: magentoOrder.id,
+    orderNumber: magentoOrder.order_number,
+    status: mapOrderStatus(magentoOrder.status),
+    createdAt: magentoOrder.order_date,
+    updatedAt: magentoOrder.order_date,
+    items,
+    totals: {
+      subtotal: transformMoney(magentoOrder.total.subtotal),
+      shipping: transformMoney(magentoOrder.total.total_shipping),
+      tax: transformMoney(magentoOrder.total.total_tax),
+      discount: magentoOrder.total.discounts?.[0]
+        ? transformMoney(magentoOrder.total.discounts[0].amount)
+        : undefined,
+      grandTotal: transformMoney(magentoOrder.total.grand_total),
+    },
+    shippingAddress,
+    billingAddress,
+    shippingMethod: magentoOrder.shipping_method,
+    paymentMethod: magentoOrder.payment_methods?.[0]?.name,
+    tracking,
+    comments:
+      magentoOrder.comments?.map((c) => ({
+        message: c.message,
+        createdAt: c.timestamp,
+        isCustomerNotified: true,
+      })) || [],
+  };
+}
+
+// ============================================
+// Shipping & Payment Transformers
+// ============================================
+
+interface MagentoShippingMethod {
+  carrier_code: string;
+  carrier_title: string;
+  method_code: string;
+  method_title: string;
+  amount: MagentoMoney;
+  price_excl_tax?: MagentoMoney;
+  price_incl_tax?: MagentoMoney;
+  available: boolean;
+  error_message?: string;
+}
+
+export function transformShippingMethod(method: MagentoShippingMethod): ShippingMethod {
+  return {
+    code: `${method.carrier_code}_${method.method_code}`,
+    carrierCode: method.carrier_code,
+    methodCode: method.method_code,
+    carrierTitle: method.carrier_title,
+    methodTitle: method.method_title,
+    price: transformMoney(method.price_incl_tax || method.amount),
+    priceExclTax: method.price_excl_tax ? transformMoney(method.price_excl_tax) : undefined,
+    available: method.available,
+    errorMessage: method.error_message,
+  };
+}
+
+interface MagentoPaymentMethod {
+  code: string;
+  title: string;
+}
+
+export function transformPaymentMethod(method: MagentoPaymentMethod): PaymentMethod {
+  return {
+    code: method.code,
+    title: method.title,
+  };
+}
+
+// ============================================
+// Wishlist Transformers
+// ============================================
+
+interface MagentoWishlistItem {
+  id: string;
+  added_at: string;
+  product: MagentoProduct;
+}
+
+export function transformWishlistItem(item: MagentoWishlistItem): WishlistItem {
+  return {
+    id: item.id,
+    product: transformProduct(item.product),
+    addedAt: item.added_at,
   };
 }

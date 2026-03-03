@@ -26,6 +26,7 @@ import {
   CardContent,
   useTheme,
   useToast,
+  useCartStore,
 } from '@ridly/mobile-core';
 import type { Product } from '@ridly/mobile-core';
 
@@ -40,7 +41,9 @@ export default function ProductDetailScreen() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const { addItem } = useCartStore();
 
   const loadProduct = useCallback(async () => {
     if (!slug) return;
@@ -60,11 +63,20 @@ export default function ProductDetailScreen() {
     loadProduct();
   }, [loadProduct]);
 
-  const handleAddToCart = useCallback(() => {
+  const handleAddToCart = useCallback(async () => {
     if (!product) return;
-    // Cart functionality will be implemented in Week 5
-    success('Added to Cart', `${product.name} has been added to your cart.`);
-  }, [product, success]);
+
+    setIsAddingToCart(true);
+    try {
+      await addItem({ productId: product.sku, quantity: 1 });
+      success('Added to Cart', `${product.name} has been added to your cart.`);
+    } catch (err) {
+      console.error('Failed to add to cart:', err);
+      error('Error', 'Failed to add to cart. Please try again.');
+    } finally {
+      setIsAddingToCart(false);
+    }
+  }, [product, addItem, success, error]);
 
   if (isLoading) {
     return (
@@ -182,7 +194,8 @@ export default function ProductDetailScreen() {
           <Button
             fullWidth
             size="lg"
-            disabled={!product.inStock}
+            disabled={!product.inStock || isAddingToCart}
+            loading={isAddingToCart}
             onPress={handleAddToCart}
             style={{ marginTop: 24 }}
           >

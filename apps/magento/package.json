@@ -8,11 +8,14 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "proxy": "node scripts/cors-proxy.js",
+    "web:dev": "node scripts/cors-proxy.js & expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/native": "^7.1.8",
     "@ridly/mobile-adapter-magento": "workspace:*",
     "@ridly/mobile-core": "workspace:*",

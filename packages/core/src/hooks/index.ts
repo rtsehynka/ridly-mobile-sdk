@@ -1,43 +1,100 @@
 /**
  * RIDLY Mobile SDK - React Hooks
- *
- * Hooks will be added alongside components.
  */
 
 // Re-export theme hooks
 export { useTheme, useThemeTokens, useIsDarkMode } from '../theme/ThemeContext';
 
-// Placeholder export
-export const HOOKS_PLACEHOLDER = 'More hooks will be added in later weeks';
+// Core hooks
+export { useAdapter } from './useAdapter';
+export {
+  useConfig,
+  useThemeConfig,
+  useFeaturesConfig,
+  useLocalizationConfig,
+  useNavigationConfig,
+  type UseConfigReturn,
+} from './useConfig';
 
-// Core hooks (Week 1)
-// export { useAdapter } from './useAdapter';
-// export { useConfig } from './useConfig';
+// Product hooks
+export {
+  useProducts,
+  useInfiniteProducts,
+  type UseProductsOptions,
+  type UseProductsReturn,
+} from './useProducts';
 
-// Product hooks (Week 3)
-// export { useProducts } from './useProducts';
-// export { useProduct } from './useProduct';
-// export { useCategories } from './useCategories';
-// export { useCategory } from './useCategory';
+export {
+  useProduct,
+  useRelatedProducts,
+  useUpsellProducts,
+  type UseProductOptions,
+  type UseProductReturn,
+} from './useProduct';
 
-// Search hooks (Week 4)
-// export { useSearch } from './useSearch';
-// export { useSearchSuggestions } from './useSearchSuggestions';
-// export { useFilters } from './useFilters';
+// Category hooks
+export {
+  useCategories,
+  useCategoryTree,
+  type UseCategoriesOptions,
+  type UseCategoriesReturn,
+} from './useCategories';
 
-// Cart hooks (Week 5)
-// export { useCart } from './useCart';
+export {
+  useCategory,
+  type UseCategoryOptions,
+  type UseCategoryReturn,
+} from './useCategory';
 
-// Auth hooks (Week 5)
-// export { useAuth } from './useAuth';
-// export { useCustomer } from './useCustomer';
+// Search hooks
+export {
+  useSearch,
+  useInfiniteSearch,
+  useSearchSuggestions,
+  type UseSearchOptions,
+  type UseSearchReturn,
+} from './useSearch';
 
-// Checkout hooks (Week 6)
-// export { useCheckout } from './useCheckout';
+// Cart hooks
+export {
+  useCart,
+  useCartItemCount,
+  useIsCartEmpty,
+  type UseCartReturn,
+} from './useCart';
 
-// Order hooks (Week 7)
-// export { useOrders } from './useOrders';
-// export { useOrder } from './useOrder';
+// Auth hooks
+export {
+  useAuth,
+  useIsAuthenticated,
+  useCustomer,
+  type UseAuthReturn,
+} from './useAuth';
 
-// Wishlist hooks (Week 7)
-// export { useWishlist } from './useWishlist';
+// Checkout hooks
+export {
+  useCheckout,
+  type CheckoutStep,
+  type CheckoutState,
+  type UseCheckoutReturn,
+} from './useCheckout';
+
+// Order hooks
+export {
+  useOrders,
+  useInfiniteOrders,
+  useOrder,
+  useOrderStatusLabel,
+  type UseOrdersOptions,
+  type UseOrdersReturn,
+  type UseOrderOptions,
+  type UseOrderReturn,
+} from './useOrders';
+
+// Wishlist hooks
+export {
+  useWishlist,
+  useWishlistItemCount,
+  useIsInWishlist,
+  type UseWishlistReturn,
+} from './useWishlist';
