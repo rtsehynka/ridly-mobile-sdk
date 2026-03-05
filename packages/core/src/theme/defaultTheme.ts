@@ -39,6 +39,10 @@ export const defaultDarkTheme: ThemeTokens = {
     tabBarBackground: '#1E1E1E',
     tabBarActive: '#FFFFFF',
     tabBarInactive: '#666666',
+    // Primary colors inverted for dark mode
+    primary: '#FFFFFF',
+    primaryDark: '#E0E0E0',
+    onPrimary: '#000000',
     // UI state colors for dark mode
     disabled: '#374151',
     disabledText: '#6B7280',

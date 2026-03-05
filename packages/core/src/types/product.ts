@@ -32,6 +32,7 @@ export interface ProductAttribute {
  */
 export interface ProductOption {
   id: string;
+  code: string; // attribute code for matching with variants (e.g., "color", "size")
   label: string;
   type: 'select' | 'swatch' | 'text';
   required: boolean;

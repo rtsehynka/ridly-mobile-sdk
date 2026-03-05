@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
-import { ScrollView, View, StyleSheet, RefreshControl } from 'react-native';
+import { ScrollView, View, StyleSheet, RefreshControl, Image, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -19,6 +19,9 @@ import {
 import type { Product, Category } from '@ridly/mobile-core';
 
 import { magentoAdapter } from '../../lib/adapter';
+
+// Import logo
+const ridlyLogo = require('../../assets/images/ridly-logo.png');
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -35,11 +38,30 @@ export default function HomeScreen() {
       // Load products and categories in parallel
       const [productsResult, categoriesResult] = await Promise.all([
         magentoAdapter.getProducts({ pageSize: 10 }),
-        magentoAdapter.getCategories(),
+        magentoAdapter.getCategoryTree(),
       ]);
 
       setProducts(productsResult.items);
-      setCategories(categoriesResult);
+
+      // Flatten and filter categories - get level 2 categories (main categories)
+      const flattenCategories = (cats: Category[], level = 0): Category[] => {
+        let result: Category[] = [];
+        for (const cat of cats) {
+          if (cat.name !== 'Default Category' && cat.name !== 'Root Catalog') {
+            result.push({ ...cat, level });
+          }
+          if (cat.children && cat.children.length > 0) {
+            result = result.concat(flattenCategories(cat.children as Category[], level + 1));
+          }
+        }
+        return result;
+      };
+
+      const allCats = flattenCategories(categoriesResult);
+      // Show categories at level 1 (children of root)
+      const mainCategories = allCats.filter(c => c.level === 1).slice(0, 8);
+      setCategories(mainCategories);
+      console.log('Categories loaded:', mainCategories.length, mainCategories.map(c => c.name));
     } catch (err) {
       console.error('Failed to load data:', err);
       error('Error', 'Failed to load products. Please try again.');
@@ -87,6 +109,23 @@ export default function HomeScreen() {
           />
         }
       >
+        {/* Hero Banner */}
+        <View style={styles.banner}>
+          <View style={[styles.bannerContent, { backgroundColor: theme.colors.surface }]}>
+            <Image
+              source={ridlyLogo}
+              style={styles.bannerLogo}
+              resizeMode="contain"
+            />
+            <Text style={{ fontSize: 14, color: theme.colors.textSecondary, marginTop: 8, textAlign: 'center' }}>
+              Mobile Commerce SDK
+            </Text>
+            <Text style={{ fontSize: 12, color: theme.colors.textSecondary, marginTop: 4, textAlign: 'center' }}>
+              Build native shopping apps faster
+            </Text>
+          </View>
+        </View>
+
         {/* Categories Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -100,14 +139,67 @@ export default function HomeScreen() {
               Categories
             </Text>
           </View>
-          <CategoryList
-            categories={categories}
-            layout="chips"
-            onCategoryPress={handleCategoryPress}
-            isLoading={isLoading}
-            skeletonCount={6}
-            showProductCount={false}
-          />
+          {isLoading ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <View key={i} style={{ alignItems: 'center', width: 72 }}>
+                  <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: theme.colors.border }} />
+                  <View style={{ width: 50, height: 12, borderRadius: 4, backgroundColor: theme.colors.border, marginTop: 8 }} />
+                </View>
+              ))}
+            </ScrollView>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}>
+              {categories.map((category) => (
+                <Pressable
+                  key={category.id}
+                  onPress={() => handleCategoryPress(category)}
+                  style={({ pressed }) => ({
+                    alignItems: 'center',
+                    width: 72,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <View
+                    style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: 32,
+                      backgroundColor: theme.colors.surface,
+                      borderWidth: 2,
+                      borderColor: theme.colors.border,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {category.image?.url ? (
+                      <Image
+                        source={{ uri: category.image.url }}
+                        style={{ width: 64, height: 64, borderRadius: 32 }}
+                      />
+                    ) : (
+                      <Text style={{ fontSize: 24, fontWeight: '700', color: theme.colors.primary }}>
+                        {category.name.charAt(0)}
+                      </Text>
+                    )}
+                  </View>
+                  <Text
+                    numberOfLines={2}
+                    style={{
+                      fontSize: 12,
+                      color: theme.colors.text,
+                      textAlign: 'center',
+                      marginTop: 8,
+                      fontWeight: '500',
+                    }}
+                  >
+                    {category.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
         </View>
 
         {/* Featured Products Section */}
@@ -170,6 +262,19 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingBottom: 24,
+  },
+  banner: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  bannerContent: {
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+  },
+  bannerLogo: {
+    width: 120,
+    height: 40,
   },
   section: {
     marginTop: 24,

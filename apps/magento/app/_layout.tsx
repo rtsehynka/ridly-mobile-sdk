@@ -10,8 +10,19 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ThemeProvider, ToastContainer, useConfigStore } from '@ridly/mobile-core';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 2,
+    },
+  },
+});
 import type { ThemeConfig } from '@ridly/mobile-core';
 import { config, magentoAdapter } from '../lib/adapter';
 
@@ -79,26 +90,42 @@ function RootLayoutNav() {
   const themeConfig = config.theme as ThemeConfig;
 
   return (
-    <ThemeProvider config={themeConfig}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="product/[slug]"
-          options={{
-            title: 'Product',
-            headerBackTitle: 'Back',
-          }}
-        />
-        <Stack.Screen
-          name="category/[slug]"
-          options={{
-            title: 'Category',
-            headerBackTitle: 'Back',
-          }}
-        />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-      <ToastContainer position="top" />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider config={themeConfig}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="product/[slug]"
+            options={{
+              title: 'Product',
+              headerBackTitle: 'Back',
+            }}
+          />
+          <Stack.Screen
+            name="category/[slug]"
+            options={{
+              title: 'Category',
+              headerBackTitle: 'Back',
+            }}
+          />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen
+            name="checkout"
+            options={{
+              title: 'Checkout',
+              headerBackTitle: 'Cart',
+            }}
+          />
+          <Stack.Screen
+            name="checkout/success"
+            options={{
+              title: 'Order Confirmed',
+              headerBackVisible: false,
+            }}
+          />
+        </Stack>
+        <ToastContainer position="top" />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

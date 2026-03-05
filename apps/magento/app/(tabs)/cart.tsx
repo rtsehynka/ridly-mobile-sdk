@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useEffect } from 'react';
-import { View, ScrollView, Image, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Image, StyleSheet, Pressable, ActivityIndicator, Text as RNText } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -204,13 +204,41 @@ export default function CartScreen() {
                 <Price price={cart.totals.grandTotal.amount} currency={cart.totals.grandTotal.currency} size="lg" />
               </View>
 
-              <Button fullWidth size="lg" style={{ marginTop: 16 }} onPress={handleCheckout}>
-                Proceed to Checkout
-              </Button>
+              <Pressable
+                onPress={handleCheckout}
+                style={{
+                  marginTop: 16,
+                  backgroundColor: '#1a1a1a',
+                  paddingVertical: 16,
+                  paddingHorizontal: 24,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <RNText style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>
+                  Proceed to Checkout
+                </RNText>
+              </Pressable>
 
-              <Button fullWidth variant="ghost" style={{ marginTop: 8 }} onPress={handleContinueShopping}>
-                Continue Shopping
-              </Button>
+              <Pressable
+                onPress={handleContinueShopping}
+                style={{
+                  marginTop: 12,
+                  backgroundColor: 'transparent',
+                  paddingVertical: 14,
+                  paddingHorizontal: 24,
+                  borderRadius: 8,
+                  borderWidth: 2,
+                  borderColor: '#1a1a1a',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <RNText style={{ color: '#1a1a1a', fontSize: 16, fontWeight: '600' }}>
+                  Continue Shopping
+                </RNText>
+              </Pressable>
             </CardContent>
           </Card>
         </View>
@@ -314,5 +342,19 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     marginBottom: 0,
+  },
+  checkoutButton: {
+    marginTop: 16,
+    backgroundColor: '#000000',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

@@ -2,7 +2,7 @@
   "$schema": "../../packages/core/ridly.mobile.schema.json",
   "store": {
     "platform": "magento",
-    "url": "https://voriagh.gomage.dev",
+    "url": "https://venia.magento.com",
     "graphql": true,
     "storeCode": "default"
   },

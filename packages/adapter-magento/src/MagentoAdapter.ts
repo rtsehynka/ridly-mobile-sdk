@@ -220,14 +220,14 @@ export class MagentoAdapter implements ECommerceAdapter {
       .map(transformCategory);
   }
 
-  async getCategory(idOrSlug: string): Promise<Category> {
+  async getCategory(slug: string): Promise<Category> {
     const response = await this.client.query<{ categories: { items: any[] } }>(
       CATEGORY_QUERY,
-      { id: idOrSlug }
+      { urlKey: slug }
     );
 
     if (!response.categories.items.length) {
-      throw new Error(`Category not found: ${idOrSlug}`);
+      throw new Error(`Category not found: ${slug}`);
     }
 
     return transformCategory(response.categories.items[0]);

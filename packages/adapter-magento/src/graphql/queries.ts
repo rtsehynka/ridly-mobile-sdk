@@ -44,11 +44,11 @@ export const CATEGORY_TREE_QUERY = `
 `;
 
 /**
- * Single Category
+ * Single Category by URL key (slug)
  */
 export const CATEGORY_QUERY = `
-  query Category($id: String!) {
-    categories(filters: { category_uid: { eq: $id } }) {
+  query Category($urlKey: String!) {
+    categories(filters: { url_key: { eq: $urlKey } }) {
       items {
         ...CategoryFields
         breadcrumbs {
@@ -209,7 +209,6 @@ export const GET_CART_QUERY = `
     }
   }
   ${PRODUCT_BASIC_FRAGMENT}
-  ${MONEY_FRAGMENT}
 `;
 
 export const ADD_TO_CART_MUTATION = `

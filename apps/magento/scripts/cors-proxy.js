@@ -10,7 +10,7 @@ const https = require('https');
 const url = require('url');
 
 const PROXY_PORT = 3001;
-const TARGET_HOST = 'voriagh.gomage.dev';
+const TARGET_HOST = 'venia.magento.com';
 const TARGET_PATH = '/graphql';
 
 const server = http.createServer((req, res) => {

@@ -8,6 +8,9 @@ import type {
   Product,
   ProductType,
   ProductAttribute,
+  ProductOption,
+  ProductOptionValue,
+  ProductVariant,
   CategoryReference,
   Category,
   Cart,
@@ -54,6 +57,38 @@ interface MagentoPriceRange {
   maximum_price: MagentoPrice;
 }
 
+interface MagentoConfigurableOption {
+  id: string;
+  uid: string;
+  attribute_code: string;
+  label: string;
+  position?: number;
+  values: Array<{
+    uid: string;
+    label: string;
+    default_label?: string;
+    store_label?: string;
+    swatch_data?: { value: string };
+  }>;
+}
+
+interface MagentoVariant {
+  attributes: Array<{
+    uid: string;
+    code: string;
+    label: string;
+    value_index: number;
+  }>;
+  product: {
+    id: number;
+    uid: string;
+    sku: string;
+    stock_status?: string;
+    price_range: MagentoPriceRange;
+    small_image?: MagentoImage;
+  };
+}
+
 interface MagentoProduct {
   id: number;
   uid: string;
@@ -61,6 +96,7 @@ interface MagentoProduct {
   name: string;
   url_key: string;
   __typename?: string;
+  stock_status?: string;
   image?: MagentoImage;
   small_image?: MagentoImage;
   price_range: MagentoPriceRange;
@@ -70,6 +106,8 @@ interface MagentoProduct {
   categories?: MagentoCategory[];
   related_products?: MagentoProduct[];
   upsell_products?: MagentoProduct[];
+  configurable_options?: MagentoConfigurableOption[];
+  variants?: MagentoVariant[];
   created_at?: string;
   updated_at?: string;
 }
@@ -80,6 +118,7 @@ interface MagentoCategory {
   name: string;
   url_key: string;
   url_path?: string;
+  description?: string;
   position?: number;
   level?: number;
   include_in_menu?: number;
@@ -246,6 +285,48 @@ export function transformProduct(magentoProduct: MagentoProduct): Product {
   // Check if there's a discount (final_price < regular_price)
   const hasDiscount = discount && discount.percent_off > 0;
 
+  // Transform configurable options
+  const options: ProductOption[] = (magentoProduct.configurable_options || []).map((opt) => ({
+    id: opt.uid,
+    code: opt.attribute_code, // Used for matching with variant options
+    label: opt.label,
+    type: opt.values.some((v) => v.swatch_data?.value) ? 'swatch' : 'select',
+    required: true,
+    values: opt.values.map((val): ProductOptionValue => ({
+      id: val.uid,
+      label: val.store_label || val.label,
+      swatch: val.swatch_data?.value,
+      inStock: true, // Will be determined by variant lookup
+    })),
+  }));
+
+  // Transform variants
+  const variants: ProductVariant[] = (magentoProduct.variants || []).map((v) => {
+    const variantOptions: Record<string, string> = {};
+    v.attributes.forEach((attr) => {
+      variantOptions[attr.code] = attr.label;
+    });
+
+    return {
+      id: v.product.uid,
+      sku: v.product.sku,
+      price: transformMoney(v.product.price_range.minimum_price.final_price),
+      specialPrice: v.product.price_range.minimum_price.discount?.percent_off
+        ? transformMoney(v.product.price_range.minimum_price.final_price)
+        : undefined,
+      options: variantOptions,
+      inStock: v.product.stock_status === 'IN_STOCK',
+      image: v.product.small_image
+        ? { url: v.product.small_image.url, alt: v.product.small_image.label || '' }
+        : undefined,
+    };
+  });
+
+  // Determine stock status
+  const inStock = magentoProduct.stock_status === 'IN_STOCK' ||
+    (magentoProduct.stock_status === undefined && variants.some((v) => v.inStock)) ||
+    magentoProduct.stock_status === undefined; // Default to true if not provided
+
   return {
     id: magentoProduct.uid,
     sku: magentoProduct.sku,
@@ -257,10 +338,10 @@ export function transformProduct(magentoProduct: MagentoProduct): Product {
     specialPrice: hasDiscount ? transformMoney(minPrice.final_price) : undefined,
     images,
     thumbnail: transformImage(magentoProduct.small_image || magentoProduct.image, magentoProduct.name),
-    inStock: true, // Default to true since stock_status is not available
+    inStock,
     categories,
-    variants: [],
-    options: [],
+    variants,
+    options,
     attributes,
     type: getProductType(magentoProduct.__typename),
     rating: undefined,
@@ -277,7 +358,7 @@ export function transformCategory(magentoCategory: MagentoCategory): Category {
     id: magentoCategory.uid,
     name: magentoCategory.name,
     slug: magentoCategory.url_key,
-    description: undefined,
+    description: magentoCategory.description || undefined,
     image: magentoCategory.image
       ? { url: magentoCategory.image, alt: magentoCategory.name }
       : undefined,

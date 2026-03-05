@@ -78,6 +78,7 @@ export const PRODUCT_DETAIL_FRAGMENT = `
     __typename
     created_at
     updated_at
+    stock_status
     description {
       html
     }
@@ -129,6 +130,49 @@ export const PRODUCT_DETAIL_FRAGMENT = `
         label
       }
     }
+    ... on ConfigurableProduct {
+      configurable_options {
+        id
+        uid
+        attribute_code
+        label
+        position
+        use_default
+        values {
+          uid
+          label
+          default_label
+          store_label
+          use_default_value
+          swatch_data {
+            value
+          }
+        }
+      }
+      variants {
+        attributes {
+          uid
+          code
+          label
+          value_index
+        }
+        product {
+          id
+          uid
+          sku
+          stock_status
+          price_range {
+            minimum_price {
+              ...PriceFields
+            }
+          }
+          small_image {
+            url
+            label
+          }
+        }
+      }
+    }
   }
   ${IMAGE_FRAGMENT}
   ${PRICE_FRAGMENT}
@@ -147,6 +191,7 @@ export const CATEGORY_FRAGMENT = `
     product_count
     image
     children_count
+    description
   }
 `;
 

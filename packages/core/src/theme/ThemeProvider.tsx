@@ -216,8 +216,13 @@ export function ThemeProvider({
         const baseTheme = isDarkMode ? presetTheme.dark : presetTheme.light;
 
         // Merge config overrides with preset
+        // First merge base colors, then merge dark mode colors on top if in dark mode
+        const mergedColors = isDarkMode && config.darkMode?.colors
+          ? { ...config.colors, ...config.darkMode.colors }
+          : config.colors;
+
         return extendTheme(baseTheme, {
-          colors: config.colors,
+          colors: mergedColors,
           borderRadius: config.borderRadius,
           spacing: config.spacing,
           typography: config.typography,
