@@ -244,14 +244,7 @@ export default function CategoriesScreen() {
             <RNText style={{ fontSize: 16, fontWeight: '600', color: theme.colors.text }}>
               {category.name}
             </RNText>
-            {category.description ? (
-              <RNText
-                numberOfLines={2}
-                style={{ fontSize: 13, color: theme.colors.textSecondary, marginTop: 2 }}
-              >
-                {stripHtml(category.description)}
-              </RNText>
-            ) : category.productCount && category.productCount > 0 ? (
+            {category.productCount && category.productCount > 0 ? (
               <RNText style={{ fontSize: 13, color: theme.colors.textSecondary, marginTop: 2 }}>
                 {category.productCount} products
               </RNText>

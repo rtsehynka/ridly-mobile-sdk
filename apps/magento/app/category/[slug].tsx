@@ -141,15 +141,6 @@ export default function CategoryDetailScreen() {
         refreshing={isLoading && products.length > 0}
         onRefresh={handleRefresh}
         emptyMessage={`No products found in ${category?.name || 'this category'}`}
-        ListHeaderComponent={
-          category?.description ? (
-            <View style={styles.header}>
-              <Text variant="body" color="textSecondary">
-                {category.description}
-              </Text>
-            </View>
-          ) : undefined
-        }
       />
     </SafeAreaView>
   );
@@ -162,10 +153,6 @@ const styles = StyleSheet.create({
   centered: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  header: {
-    padding: 16,
-    paddingBottom: 8,
   },
   headerCartButton: {
     padding: 8,
