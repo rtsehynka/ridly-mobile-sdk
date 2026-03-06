@@ -82,3 +82,9 @@ GoogleService-Info.plist
 # NOTE: themes/ and plugins/ are tracked in private repo
 # For public releases, use: git push public main --exclude=themes --exclude=plugins
 # Or create a filtered branch with release script
+
+# Internal scripts and design files
+scripts/
+design/
+*.png
+!apps/*/assets/images/*.png
