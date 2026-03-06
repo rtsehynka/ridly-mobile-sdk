@@ -77,3 +77,7 @@ GoogleService-Info.plist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Premium/Paid content (excluded from public repo)
+themes/
+plugins/
