@@ -15,6 +15,9 @@ import {
   CategoryList,
   useTheme,
   useToast,
+  Slot,
+  SLOTS,
+  useSlotHasContent,
 } from '@ridly/mobile-core';
 import type { Product, Category } from '@ridly/mobile-core';
 
@@ -32,6 +35,11 @@ export default function HomeScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Check if theme provides custom slot content
+  const hasHeroSlot = useSlotHasContent(SLOTS['home.hero']);
+  const hasCategoriesSlot = useSlotHasContent(SLOTS['home.categories']);
+  const hasFeaturedSlot = useSlotHasContent(SLOTS['home.featured']);
 
   const loadData = useCallback(async () => {
     try {
@@ -109,123 +117,160 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* Hero Banner */}
-        <View style={styles.banner}>
-          <View style={[styles.bannerContent, { backgroundColor: theme.colors.surface }]}>
-            <Image
-              source={ridlyLogo}
-              style={styles.bannerLogo}
-              resizeMode="contain"
-            />
-            <Text style={{ fontSize: 14, color: theme.colors.textSecondary, marginTop: 8, textAlign: 'center' }}>
-              Mobile Commerce SDK
-            </Text>
-            <Text style={{ fontSize: 12, color: theme.colors.textSecondary, marginTop: 4, textAlign: 'center' }}>
-              Build native shopping apps faster
-            </Text>
-          </View>
-        </View>
-
-        {/* Categories Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: '600',
-                color: theme.colors.text,
-              }}
-            >
-              Categories
-            </Text>
-          </View>
-          {isLoading ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <View key={i} style={{ alignItems: 'center', width: 72 }}>
-                  <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: theme.colors.border }} />
-                  <View style={{ width: 50, height: 12, borderRadius: 4, backgroundColor: theme.colors.border, marginTop: 8 }} />
-                </View>
-              ))}
-            </ScrollView>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}>
-              {categories.map((category) => (
-                <Pressable
-                  key={category.id}
-                  onPress={() => handleCategoryPress(category)}
-                  style={({ pressed }) => ({
-                    alignItems: 'center',
-                    width: 72,
-                    opacity: pressed ? 0.7 : 1,
-                  })}
-                >
-                  <View
-                    style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 32,
-                      backgroundColor: theme.colors.surface,
-                      borderWidth: 2,
-                      borderColor: theme.colors.border,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {category.image?.url ? (
-                      <Image
-                        source={{ uri: category.image.url }}
-                        style={{ width: 64, height: 64, borderRadius: 32 }}
-                      />
-                    ) : (
-                      <Text style={{ fontSize: 24, fontWeight: '700', color: theme.colors.primary }}>
-                        {category.name.charAt(0)}
-                      </Text>
-                    )}
-                  </View>
-                  <Text
-                    numberOfLines={2}
-                    style={{
-                      fontSize: 12,
-                      color: theme.colors.text,
-                      textAlign: 'center',
-                      marginTop: 8,
-                      fontWeight: '500',
-                    }}
-                  >
-                    {category.name}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          )}
-        </View>
-
-        {/* Featured Products Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: '600',
-                color: theme.colors.text,
-              }}
-            >
-              Featured
-            </Text>
-            <Button variant="ghost" size="sm" onPress={handleViewAllProducts}>
-              View All
-            </Button>
-          </View>
-          <ProductRow
-            products={products}
-            cardSize="md"
-            onProductPress={handleProductPress}
-            isLoading={isLoading}
-            skeletonCount={3}
+        {/* Hero Banner - Theme slot or default */}
+        {hasHeroSlot ? (
+          <Slot
+            id={SLOTS['home.hero']}
+            context={{ onShopNow: handleViewAllProducts }}
           />
-        </View>
+        ) : (
+          <View style={styles.banner}>
+            <View style={[styles.bannerContent, { backgroundColor: theme.colors.surface }]}>
+              <Image
+                source={ridlyLogo}
+                style={styles.bannerLogo}
+                resizeMode="contain"
+              />
+              <Text style={{ fontSize: 14, color: theme.colors.textSecondary, marginTop: 8, textAlign: 'center' }}>
+                Mobile Commerce SDK
+              </Text>
+              <Text style={{ fontSize: 12, color: theme.colors.textSecondary, marginTop: 4, textAlign: 'center' }}>
+                Build native shopping apps faster
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Categories Section - Theme slot or default */}
+        {hasCategoriesSlot ? (
+          <Slot
+            id={SLOTS['home.categories']}
+            context={{
+              categories,
+              onCategoryPress: handleCategoryPress,
+              onSeeAll: () => router.push('/categories'),
+            }}
+          />
+        ) : (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: '600',
+                  color: theme.colors.text,
+                }}
+              >
+                Categories
+              </Text>
+            </View>
+            {isLoading ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <View key={i} style={{ alignItems: 'center', width: 72 }}>
+                    <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: theme.colors.border }} />
+                    <View style={{ width: 50, height: 12, borderRadius: 4, backgroundColor: theme.colors.border, marginTop: 8 }} />
+                  </View>
+                ))}
+              </ScrollView>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}>
+                {categories.map((category) => (
+                  <Pressable
+                    key={category.id}
+                    onPress={() => handleCategoryPress(category)}
+                    style={({ pressed }) => ({
+                      alignItems: 'center',
+                      width: 72,
+                      opacity: pressed ? 0.7 : 1,
+                    })}
+                  >
+                    <View
+                      style={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: 32,
+                        backgroundColor: theme.colors.surface,
+                        borderWidth: 2,
+                        borderColor: theme.colors.border,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {category.image?.url ? (
+                        <Image
+                          source={{ uri: category.image.url }}
+                          style={{ width: 64, height: 64, borderRadius: 32 }}
+                        />
+                      ) : (
+                        <Text style={{ fontSize: 24, fontWeight: '700', color: theme.colors.primary }}>
+                          {category.name.charAt(0)}
+                        </Text>
+                      )}
+                    </View>
+                    <Text
+                      numberOfLines={2}
+                      style={{
+                        fontSize: 12,
+                        color: theme.colors.text,
+                        textAlign: 'center',
+                        marginTop: 8,
+                        fontWeight: '500',
+                      }}
+                    >
+                      {category.name}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        )}
+
+        {/* Featured Products Section - Theme slot or default */}
+        {hasFeaturedSlot ? (
+          <Slot
+            id={SLOTS['home.featured']}
+            context={{
+              products,
+              onProductPress: handleProductPress,
+              onAddToCart: (product: Product) => {
+                // TODO: Add to cart functionality
+                console.log('Add to cart:', product.id);
+              },
+              onToggleFavorite: (product: Product) => {
+                // TODO: Toggle favorite functionality
+                console.log('Toggle favorite:', product.id);
+              },
+              onSeeAll: handleViewAllProducts,
+            }}
+          />
+        ) : (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: '600',
+                  color: theme.colors.text,
+                }}
+              >
+                Featured
+              </Text>
+              <Button variant="ghost" size="sm" onPress={handleViewAllProducts}>
+                View All
+              </Button>
+            </View>
+            <ProductRow
+              products={products}
+              cardSize="md"
+              onProductPress={handleProductPress}
+              isLoading={isLoading}
+              skeletonCount={3}
+            />
+          </View>
+        )}
 
         {/* New Arrivals Section - reuse same products for demo */}
         <View style={styles.section}>

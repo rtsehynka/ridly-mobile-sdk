@@ -105,3 +105,12 @@ export type {
 
 // Theme types
 export type { ThemeTokens, ThemePreset, ThemeContextValue } from './theme';
+
+// Theme Package types
+export type {
+  RidlyThemePackage,
+  ThemeSlotContent,
+  ThemeScreen,
+  ThemeContext as ThemePackageContext,
+  CreateStyleOverride,
+} from './theme-package';

@@ -30,11 +30,19 @@
 
 import { useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import type { ThemeConfig, ThemeTokens, ThemeContextValue } from '../types';
+import type { ThemeConfig, ThemeTokens, ThemeContextValue, RidlyThemePackage } from '../types';
 import { ThemeContext } from './ThemeContext';
 import { createTheme, getPresetTheme, presets, extendTheme } from './createTheme';
+import { useComponentRegistry } from '../registry/ComponentRegistry';
+import { useSlotRegistry } from '../registry/SlotRegistry';
 
 export interface ThemeProviderProps {
+  /**
+   * Premium theme package (highest priority)
+   * When provided, uses tokens, style overrides, and slots from the package.
+   */
+  themePackage?: RidlyThemePackage;
+
   /**
    * Theme preset name
    * @default 'minimal'
@@ -121,6 +129,7 @@ export interface ThemeProviderProps {
  * ```
  */
 export function ThemeProvider({
+  themePackage,
   preset = 'minimal',
   lightTheme,
   darkTheme,
@@ -131,6 +140,11 @@ export function ThemeProvider({
   initialDarkMode,
   onDarkModeChange,
 }: ThemeProviderProps) {
+  // Registry access
+  const registerComponent = useComponentRegistry((state) => state.register);
+  const clearComponents = useComponentRegistry((state) => state.clear);
+  const fillSlot = useSlotRegistry((state) => state.fill);
+  const clearSlots = useSlotRegistry((state) => state.clear);
   // Get system color scheme
   const systemColorScheme = useColorScheme();
 
@@ -177,6 +191,38 @@ export function ThemeProvider({
     onDarkModeChange?.(isDarkMode);
   }, [isDarkMode, onDarkModeChange]);
 
+  // Register theme package on mount/change
+  useEffect(() => {
+    if (!themePackage) return;
+
+    // Register style overrides
+    if (themePackage.styleOverrides) {
+      Object.entries(themePackage.styleOverrides).forEach(([componentId, override]) => {
+        if (override) {
+          registerComponent(componentId, override);
+        }
+      });
+    }
+
+    // Register slot contents
+    if (themePackage.slots) {
+      themePackage.slots.forEach(({ slotId, component, priority, props }) => {
+        fillSlot(slotId, component, { priority, props });
+      });
+    }
+
+    // Call onActivate lifecycle hook
+    const currentTheme = isDarkMode ? themePackage.tokens.dark : themePackage.tokens.light;
+    themePackage.onActivate?.({ theme: currentTheme, isDarkMode });
+
+    // Cleanup on unmount or theme change
+    return () => {
+      clearComponents();
+      clearSlots();
+      themePackage.onDeactivate?.({ theme: currentTheme, isDarkMode });
+    };
+  }, [themePackage, registerComponent, fillSlot, clearComponents, clearSlots, isDarkMode]);
+
   // Toggle dark mode
   const toggleDarkMode = useCallback(() => {
     if (enableDarkMode || config?.darkMode?.enabled) {
@@ -196,6 +242,11 @@ export function ThemeProvider({
 
   // Build theme
   const theme: ThemeTokens = useMemo(() => {
+    // Priority 0: Theme package (highest priority)
+    if (themePackage) {
+      return isDarkMode ? themePackage.tokens.dark : themePackage.tokens.light;
+    }
+
     // Priority 1: Custom themes provided directly
     if (lightTheme && darkTheme) {
       return isDarkMode ? darkTheme : lightTheme;
@@ -235,7 +286,7 @@ export function ThemeProvider({
     // Priority 3: Use preset
     const selectedPreset = getPresetTheme(preset);
     return isDarkMode ? selectedPreset.dark : selectedPreset.light;
-  }, [preset, lightTheme, darkTheme, config, isDarkMode]);
+  }, [themePackage, preset, lightTheme, darkTheme, config, isDarkMode]);
 
   // Context value
   const contextValue: ThemeContextValue = useMemo(

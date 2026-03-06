@@ -20,5 +20,11 @@ export * from './stores';
 // Theme - Week 1
 export * from './theme';
 
+// Registry - Premium theme support
+export * from './registry';
+
+// Slots - UI injection points
+export * from './slots';
+
 // Utils - Week 2+
 export * from './utils';
