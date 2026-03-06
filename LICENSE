@@ -2,6 +2,17 @@ MIT License
 
 Copyright (c) 2026 RIDLY
 
+NOTE: This license applies ONLY to the RIDLY Mobile SDK core packages:
+- packages/core/
+- packages/adapter-*/
+- apps/
+
+Premium themes (themes/) and plugins (plugins/) are NOT covered by this license.
+They are proprietary software and require a separate commercial license.
+See themes/LICENSE and plugins/LICENSE for details.
+
+---
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights

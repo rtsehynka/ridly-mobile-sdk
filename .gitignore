@@ -78,6 +78,7 @@ GoogleService-Info.plist
 !.yarn/sdks
 !.yarn/versions
 
-# Premium/Paid content (excluded from public repo)
-themes/
-plugins/
+# Premium/Paid content
+# NOTE: themes/ and plugins/ are tracked in private repo
+# For public releases, use: git push public main --exclude=themes --exclude=plugins
+# Or create a filtered branch with release script
