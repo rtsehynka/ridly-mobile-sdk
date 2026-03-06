@@ -14,6 +14,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ThemeProvider, ToastContainer, useConfigStore } from '@ridly/mobile-core';
 
+// Import premium fashion theme
+import fashionTheme from '../../../themes/fashion/src';
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,7 +26,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-import type { ThemeConfig } from '@ridly/mobile-core';
 import { config, magentoAdapter } from '../lib/adapter';
 
 export {
@@ -86,12 +88,9 @@ function RootLayoutNav() {
     }
   }, [isInitialized, isInitializing, initError]);
 
-  // Cast theme config from JSON to the expected type
-  const themeConfig = config.theme as ThemeConfig;
-
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider config={themeConfig}>
+      <ThemeProvider themePackage={fashionTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen

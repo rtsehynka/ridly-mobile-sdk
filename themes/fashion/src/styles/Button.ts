@@ -1,36 +1,18 @@
 /**
  * Button Style Overrides
- *
- * Fashion theme styling for buttons.
  */
 
-import type { ThemeTokens } from '@ridly/mobile-core';
-
-interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-}
-
-interface ButtonStyles {
-  container: object;
-  text: object;
-}
-
-export function buttonStyles(
-  theme: ThemeTokens,
-  props: ButtonProps
-): Partial<ButtonStyles> {
-  const baseStyles: Partial<ButtonStyles> = {
+export function buttonStyles(theme: any, props: any): any {
+  const baseStyles = {
     container: {
-      borderRadius: 10,
+      borderRadius: theme.borderRadius?.button || 10,
     },
     text: {
       fontWeight: '600',
     },
   };
 
-  // Primary variant - solid blue
-  if (props.variant === 'primary') {
+  if (props?.variant === 'primary') {
     return {
       ...baseStyles,
       container: {
@@ -44,8 +26,7 @@ export function buttonStyles(
     };
   }
 
-  // Outline variant
-  if (props.variant === 'outline') {
+  if (props?.variant === 'outline') {
     return {
       ...baseStyles,
       container: {

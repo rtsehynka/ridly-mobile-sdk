@@ -1,7 +1,5 @@
 /**
  * CategoryScroller - Horizontal category icons for home screen
- *
- * Displays category icons in a horizontal scrollable row.
  */
 
 import React from 'react';
@@ -13,7 +11,8 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme, type Category } from '@ridly/mobile-core';
+import { useTheme } from '@ridly/mobile-core';
+import type { Category } from '@ridly/mobile-core';
 
 interface CategoryScrollerProps {
   slotContext?: {
@@ -23,24 +22,29 @@ interface CategoryScrollerProps {
   };
 }
 
-// Icon mapping for common category names
 const categoryIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
+  tops: 'shirt-outline',
+  shirts: 'shirt-outline',
   fashion: 'shirt-outline',
   clothing: 'shirt-outline',
-  apparel: 'shirt-outline',
+  bottoms: 'accessibility-outline',
+  pants: 'accessibility-outline',
+  jeans: 'accessibility-outline',
+  dresses: 'body-outline',
+  dress: 'body-outline',
+  accessories: 'watch-outline',
+  accessory: 'watch-outline',
+  jewelry: 'diamond-outline',
+  watches: 'watch-outline',
   tech: 'phone-portrait-outline',
   electronics: 'phone-portrait-outline',
   home: 'home-outline',
-  furniture: 'bed-outline',
   beauty: 'sparkles-outline',
-  cosmetics: 'sparkles-outline',
-  watches: 'watch-outline',
-  accessories: 'watch-outline',
-  jewelry: 'diamond-outline',
   shoes: 'footsteps-outline',
   bags: 'bag-outline',
-  sports: 'fitness-outline',
-  kids: 'happy-outline',
+  shop: 'storefront-outline',
+  sale: 'pricetag-outline',
+  new: 'sparkles-outline',
   default: 'grid-outline',
 };
 
@@ -60,7 +64,6 @@ export function CategoryScroller({ slotContext }: CategoryScrollerProps) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.colors.text }]}>
           Categories
@@ -72,7 +75,6 @@ export function CategoryScroller({ slotContext }: CategoryScrollerProps) {
         </Pressable>
       </View>
 
-      {/* Category icons */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -130,11 +132,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    gap: 16,
+    gap: 12,
   },
   categoryItem: {
     alignItems: 'center',
-    width: 64,
+    width: 72,
   },
   iconContainer: {
     width: 56,
@@ -143,11 +145,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   categoryName: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '500',
     textAlign: 'center',
+    lineHeight: 14,
   },
 });

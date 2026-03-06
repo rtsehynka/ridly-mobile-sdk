@@ -240,9 +240,14 @@ export default function ProductDetailScreen() {
           <H1 style={{ marginTop: 12 }}>{product.name}</H1>
 
           {/* SKU */}
-          <Text variant="caption" color="textSecondary" style={{ marginTop: 4 }}>
-            SKU: {product.sku}
-          </Text>
+          <View style={styles.skuRow}>
+            <Text variant="caption" color="textSecondary">
+              SKU: {selectedVariant?.sku || product.sku}
+            </Text>
+            {product.type === 'configurable' && (
+              <Badge variant="secondary" size="sm">Configurable</Badge>
+            )}
+          </View>
 
           {/* Price */}
           <View style={styles.priceContainer}>
@@ -256,59 +261,72 @@ export default function ProductDetailScreen() {
 
           {/* Product Options */}
           {product.options.length > 0 && (
-            <View style={{ marginTop: 20 }}>
-              {product.options.map((option) => (
-                <View key={option.id} style={{ marginBottom: 16 }}>
-                  <Text variant="label" style={{ marginBottom: 8 }}>
-                    {option.label}
-                    {selectedOptions[option.code] && (
-                      <Text variant="body" color="textSecondary">
-                        {': ' + selectedOptions[option.code]}
-                      </Text>
-                    )}
-                  </Text>
-                  <View style={styles.optionsRow}>
-                    {option.values.map((value) => {
-                      const isSelected = selectedOptions[option.code] === value.label;
-                      const isColorSwatch = value.swatch?.startsWith('#');
-
-                      return (
-                        <Pressable
-                          key={value.id}
-                          onPress={() => setSelectedOptions((prev) => ({
-                            ...prev,
-                            [option.code]: value.label,
-                          }))}
-                          style={[
-                            styles.optionButton,
-                            {
-                              borderColor: isSelected ? theme.colors.primary : theme.colors.border,
-                              borderWidth: isSelected ? 2 : 1,
-                              backgroundColor: isColorSwatch
-                                ? value.swatch!
-                                : theme.colors.surface,
-                            },
-                            isColorSwatch && styles.swatchButton,
-                          ]}
-                        >
-                          {!isColorSwatch && (
-                            <Text
-                              variant="body"
-                              style={{
-                                color: isSelected ? theme.colors.primary : theme.colors.text,
-                                fontWeight: isSelected ? '600' : '400',
-                              }}
-                            >
-                              {value.label}
-                            </Text>
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
+            <Card variant="outlined" style={styles.optionsCard}>
+              <CardContent>
+                <View style={styles.optionsHeader}>
+                  <Text variant="label">Select Options</Text>
+                  {!allOptionsSelected && (
+                    <Text variant="caption" style={{ color: theme.colors.error }}>
+                      * Required
+                    </Text>
+                  )}
                 </View>
-              ))}
-            </View>
+                {product.options.map((option) => (
+                  <View key={option.id} style={styles.optionGroup}>
+                    <Text variant="body" style={styles.optionLabel}>
+                      {option.label}
+                      {selectedOptions[option.code] && (
+                        <Text style={{ color: theme.colors.primary, fontWeight: '600' }}>
+                          {': ' + selectedOptions[option.code]}
+                        </Text>
+                      )}
+                    </Text>
+                    <View style={styles.optionsRow}>
+                      {option.values.map((value) => {
+                        const isSelected = selectedOptions[option.code] === value.label;
+                        const isColorSwatch = value.swatch?.startsWith('#');
+
+                        return (
+                          <Pressable
+                            key={value.id}
+                            onPress={() => setSelectedOptions((prev) => ({
+                              ...prev,
+                              [option.code]: value.label,
+                            }))}
+                            style={[
+                              styles.optionButton,
+                              {
+                                borderColor: isSelected ? theme.colors.primary : theme.colors.border,
+                                borderWidth: isSelected ? 2 : 1,
+                                backgroundColor: isColorSwatch
+                                  ? value.swatch!
+                                  : theme.colors.surface,
+                              },
+                              isColorSwatch && styles.swatchButton,
+                            ]}
+                          >
+                            {!isColorSwatch && (
+                              <Text
+                                variant="body"
+                                style={{
+                                  color: isSelected ? theme.colors.primary : theme.colors.text,
+                                  fontWeight: isSelected ? '600' : '400',
+                                }}
+                              >
+                                {value.label}
+                              </Text>
+                            )}
+                            {isColorSwatch && isSelected && (
+                              <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+                            )}
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </View>
+                ))}
+              </CardContent>
+            </Card>
           )}
 
           {/* Description */}
@@ -475,6 +493,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+  },
+  skuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  optionsCard: {
+    marginTop: 20,
+  },
+  optionsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  optionGroup: {
+    marginBottom: 16,
+  },
+  optionLabel: {
+    marginBottom: 10,
+    fontWeight: '500',
   },
   optionsRow: {
     flexDirection: 'row',

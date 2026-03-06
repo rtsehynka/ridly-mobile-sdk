@@ -279,7 +279,7 @@ export function transformProduct(magentoProduct: MagentoProduct): Product {
   const relatedProductIds = magentoProduct.related_products?.map((p) => p.uid);
   const upsellProductIds = magentoProduct.upsell_products?.map((p) => p.uid);
 
-  // Build attributes array (empty for now - would need custom attributes query)
+  // Build attributes array (brand support requires store-specific configuration)
   const attributes: ProductAttribute[] = [];
 
   // Check if there's a discount (final_price < regular_price)

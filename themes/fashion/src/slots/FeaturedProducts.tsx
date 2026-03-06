@@ -1,8 +1,5 @@
 /**
  * FeaturedProducts - Featured products grid for home screen
- *
- * Displays products in a 2-column grid with brand name, product name, and price.
- * Includes favorite button and add-to-cart quick action.
  */
 
 import React from 'react';
@@ -15,10 +12,11 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme, Price, type Product } from '@ridly/mobile-core';
+import { useTheme, Price } from '@ridly/mobile-core';
+import type { Product } from '@ridly/mobile-core';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2; // 16px padding on each side + 16px gap
+const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
 
 interface FeaturedProductsProps {
   slotContext?: {
@@ -34,11 +32,10 @@ interface FeaturedProductsProps {
 export function FeaturedProducts({ slotContext }: FeaturedProductsProps) {
   const { theme } = useTheme();
   const products = slotContext?.products || [];
-  const favorites = slotContext?.favorites || new Set();
+  const favorites = slotContext?.favorites || new Set<string>();
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.colors.text }]}>
           Featured
@@ -50,113 +47,117 @@ export function FeaturedProducts({ slotContext }: FeaturedProductsProps) {
         </Pressable>
       </View>
 
-      {/* Products grid */}
       <View style={styles.grid}>
-        {products.slice(0, 4).map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            isFavorite={favorites.has(product.id)}
-            onPress={() => slotContext?.onProductPress?.(product)}
-            onAddToCart={() => slotContext?.onAddToCart?.(product)}
-            onToggleFavorite={() => slotContext?.onToggleFavorite?.(product)}
-            theme={theme}
-          />
-        ))}
+        {products.slice(0, 4).map((product) => {
+          const isFavorite = favorites.has(product.id);
+          const brandAttr = product.attributes?.find(
+            (attr) =>
+              attr.code === 'brand' ||
+              attr.code === 'manufacturer' ||
+              attr.code === 'brand_name' ||
+              attr.code === 'product_brand'
+          );
+          const brand = brandAttr?.value || '';
+
+          // Get color options for swatches
+          const colorOption = product.options?.find(
+            (opt) => opt.code === 'color' || opt.code === 'colour'
+          );
+          const colorSwatches = colorOption?.values?.slice(0, 4) || [];
+
+          // Get size options count
+          const sizeOption = product.options?.find(
+            (opt) => opt.code === 'size'
+          );
+          const sizeCount = sizeOption?.values?.length || 0;
+
+          return (
+            <Pressable
+              key={product.id}
+              style={styles.card}
+              onPress={() => slotContext?.onProductPress?.(product)}
+            >
+              <View style={[styles.imageContainer, { backgroundColor: theme.colors.surface }]}>
+                <Image
+                  source={{ uri: product.thumbnail?.url || product.images?.[0]?.url }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+                <Pressable
+                  style={[styles.favoriteButton, { backgroundColor: theme.colors.background }]}
+                  onPress={() => slotContext?.onToggleFavorite?.(product)}
+                >
+                  <Ionicons
+                    name={isFavorite ? 'heart' : 'heart-outline'}
+                    size={18}
+                    color={isFavorite ? theme.colors.error : theme.colors.textSecondary}
+                  />
+                </Pressable>
+              </View>
+
+              <View style={styles.info}>
+                {brand ? (
+                  <Text style={[styles.brand, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+                    {String(brand).toUpperCase()}
+                  </Text>
+                ) : null}
+                <Text style={[styles.name, { color: theme.colors.text }]} numberOfLines={2}>
+                  {product.name}
+                </Text>
+
+                {/* Options: Color swatches and size count */}
+                {(colorSwatches.length > 0 || sizeCount > 0) && (
+                  <View style={styles.optionsRow}>
+                    {colorSwatches.length > 0 && (
+                      <View style={styles.swatchesContainer}>
+                        {colorSwatches.map((color) => (
+                          <View
+                            key={color.id}
+                            style={[
+                              styles.colorSwatch,
+                              {
+                                backgroundColor: color.swatch?.startsWith('#')
+                                  ? color.swatch
+                                  : theme.colors.border,
+                                borderColor: theme.colors.border,
+                              },
+                            ]}
+                          />
+                        ))}
+                        {(colorOption?.values?.length || 0) > 4 && (
+                          <Text style={[styles.moreColors, { color: theme.colors.textSecondary }]}>
+                            +{(colorOption?.values?.length || 0) - 4}
+                          </Text>
+                        )}
+                      </View>
+                    )}
+                    {sizeCount > 0 && (
+                      <Text style={[styles.sizeCount, { color: theme.colors.textSecondary }]}>
+                        {sizeCount} sizes
+                      </Text>
+                    )}
+                  </View>
+                )}
+
+                <View style={styles.priceRow}>
+                  <Price
+                    price={product.price.amount}
+                    currency={product.price.currency}
+                    size="md"
+                  />
+                  <Pressable
+                    style={[styles.addButton, { backgroundColor: theme.colors.primary }]}
+                    onPress={() => slotContext?.onAddToCart?.(product)}
+                  >
+                    <Ionicons name="add" size={20} color={theme.colors.onPrimary} />
+                  </Pressable>
+                </View>
+              </View>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
-  );
-}
-
-interface ProductCardProps {
-  product: Product;
-  isFavorite: boolean;
-  onPress: () => void;
-  onAddToCart: () => void;
-  onToggleFavorite: () => void;
-  theme: any;
-}
-
-function ProductCard({
-  product,
-  isFavorite,
-  onPress,
-  onAddToCart,
-  onToggleFavorite,
-  theme,
-}: ProductCardProps) {
-  // Extract brand from attributes or use placeholder
-  const brand = product.attributes?.find(
-    (attr) => attr.code === 'brand' || attr.code === 'manufacturer'
-  )?.value || '';
-
-  return (
-    <Pressable style={styles.card} onPress={onPress}>
-      {/* Product image */}
-      <View
-        style={[
-          styles.imageContainer,
-          { backgroundColor: theme.colors.surface },
-        ]}
-      >
-        <Image
-          source={{ uri: product.thumbnail?.url || product.images?.[0]?.url }}
-          style={styles.image}
-          resizeMode="cover"
-        />
-
-        {/* Favorite button */}
-        <Pressable
-          style={[
-            styles.favoriteButton,
-            { backgroundColor: theme.colors.background },
-          ]}
-          onPress={onToggleFavorite}
-        >
-          <Ionicons
-            name={isFavorite ? 'heart' : 'heart-outline'}
-            size={18}
-            color={isFavorite ? theme.colors.error : theme.colors.textSecondary}
-          />
-        </Pressable>
-      </View>
-
-      {/* Product info */}
-      <View style={styles.info}>
-        {brand ? (
-          <Text
-            style={[styles.brand, { color: theme.colors.textSecondary }]}
-            numberOfLines={1}
-          >
-            {brand.toUpperCase()}
-          </Text>
-        ) : null}
-
-        <Text
-          style={[styles.name, { color: theme.colors.text }]}
-          numberOfLines={2}
-        >
-          {product.name}
-        </Text>
-
-        <View style={styles.priceRow}>
-          <Price
-            price={product.price.amount}
-            currency={product.price.currency}
-            originalPrice={product.price.originalAmount}
-            size="md"
-          />
-
-          {/* Add to cart button */}
-          <Pressable
-            style={[styles.addButton, { backgroundColor: theme.colors.primary }]}
-            onPress={onAddToCart}
-          >
-            <Ionicons name="add" size={20} color={theme.colors.onPrimary} />
-          </Pressable>
-        </View>
-      </View>
-    </Pressable>
   );
 }
 
@@ -208,11 +209,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   info: {
     paddingHorizontal: 2,
@@ -228,6 +224,32 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     lineHeight: 18,
     marginBottom: 6,
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  swatchesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  colorSwatch: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 1,
+  },
+  moreColors: {
+    fontSize: 10,
+    fontWeight: '500',
+    marginLeft: 2,
+  },
+  sizeCount: {
+    fontSize: 11,
+    fontWeight: '500',
   },
   priceRow: {
     flexDirection: 'row',
