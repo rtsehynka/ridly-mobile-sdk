@@ -1,9 +1,10 @@
 /**
  * Simple API test script to verify Magento GraphQL queries
  * Run with: node test-api.mjs
+мені потіб * Or with custom URL: MAGENTO_URL=https://your-store.com/graphql node test-api.mjs
  */
 
-const MAGENTO_URL = 'https://voriagh.gomage.dev/graphql';
+const MAGENTO_URL = process.env.MAGENTO_URL || 'https://magento.ridly.io/graphql';
 
 async function query(queryString, variables = {}) {
   const response = await fetch(MAGENTO_URL, {

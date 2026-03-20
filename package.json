@@ -23,18 +23,31 @@
     "typecheck": "yarn workspaces foreach -A run typecheck",
     "test": "yarn workspaces foreach -A run test",
     "clean": "yarn workspaces foreach -A run clean && rm -rf node_modules",
-    "prepare": "husky"
+    "prepare": "husky",
+    "e2e:build:ios": "detox build --configuration ios.sim.debug",
+    "e2e:build:ios:release": "detox build --configuration ios.sim.release",
+    "e2e:build:android": "detox build --configuration android.emu.debug",
+    "e2e:build:android:release": "detox build --configuration android.emu.release",
+    "e2e:test:ios": "detox test --configuration ios.sim.debug",
+    "e2e:test:ios:release": "detox test --configuration ios.sim.release",
+    "e2e:test:android": "detox test --configuration android.emu.debug",
+    "e2e:test:android:release": "detox test --configuration android.emu.release"
   },
   "devDependencies": {
+    "@types/detox": "^18.1.3",
+    "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "detox": "^20.47.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^9.0.0",
+    "jest": "^30.3.0",
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.3.0"
   },
   "lint-staged": {

@@ -1,0 +1,39 @@
+{
+  "labels": {
+    "price": "Ціна",
+    "sku": "Артикул",
+    "availability": "Наявність",
+    "quantity": "Кількість",
+    "color": "Колір",
+    "size": "Розмір",
+    "description": "Опис",
+    "specifications": "Характеристики",
+    "relatedProducts": "Схожі товари"
+  },
+  "status": {
+    "inStock": "В наявності",
+    "outOfStock": "Немає в наявності",
+    "lowStock": "Залишилось лише {{count}}",
+    "backorder": "Під замовлення"
+  },
+  "actions": {
+    "addToCart": "Додати в кошик",
+    "addToWishlist": "Додати до обраного",
+    "removeFromWishlist": "Видалити з обраного",
+    "buyNow": "Купити зараз",
+    "share": "Поділитися",
+    "compare": "Порівняти"
+  },
+  "reviews": {
+    "zero": "Немає відгуків",
+    "one": "{{count}} відгук",
+    "few": "{{count}} відгуки",
+    "many": "{{count}} відгуків"
+  },
+  "messages": {
+    "addedToCart": "Додано в кошик",
+    "addedToWishlist": "Додано до обраного",
+    "removedFromWishlist": "Видалено з обраного",
+    "selectOptions": "Виберіть опції"
+  }
+}

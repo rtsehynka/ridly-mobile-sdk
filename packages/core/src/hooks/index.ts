@@ -98,3 +98,10 @@ export {
   useIsInWishlist,
   type UseWishlistReturn,
 } from './useWishlist';
+
+// Error handling hooks
+export {
+  useErrorHandler,
+  type UseErrorHandlerOptions,
+  type UseErrorHandlerReturn,
+} from './useErrorHandler';

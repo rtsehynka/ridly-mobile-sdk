@@ -9,9 +9,11 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 
-const PROXY_PORT = 3001;
-const TARGET_HOST = 'venia.magento.com';
-const TARGET_PATH = '/graphql';
+const PROXY_PORT = process.env.PROXY_PORT || 3001;
+const TARGET_URL = process.env.MAGENTO_URL || 'https://venia.magento.com/graphql';
+const parsedUrl = new URL(TARGET_URL);
+const TARGET_HOST = parsedUrl.hostname;
+const TARGET_PATH = parsedUrl.pathname || '/graphql';
 
 const server = http.createServer((req, res) => {
   // Handle CORS preflight

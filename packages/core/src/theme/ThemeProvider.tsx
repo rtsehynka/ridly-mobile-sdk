@@ -145,46 +145,55 @@ export function ThemeProvider({
   const clearComponents = useComponentRegistry((state) => state.clear);
   const fillSlot = useSlotRegistry((state) => state.fill);
   const clearSlots = useSlotRegistry((state) => state.clear);
-  // Get system color scheme
+
+  // Get system color scheme - but DON'T use it during initial render to avoid hydration mismatch
   const systemColorScheme = useColorScheme();
 
-  // Determine initial dark mode state
-  const getInitialDarkMode = (): boolean => {
+  // Always initialize with false for SSR to ensure consistent hydration
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Sync dark mode ONLY after hydration to avoid mismatch
+  useEffect(() => {
+    setIsHydrated(true);
+
+    // Now it's safe to read system preference
     if (initialDarkMode !== undefined) {
-      return initialDarkMode;
+      setIsDarkMode(initialDarkMode);
+      return;
     }
 
     if (!enableDarkMode) {
-      return false;
+      setIsDarkMode(false);
+      return;
     }
 
     // Legacy config support
     if (config?.darkMode?.enabled) {
-      if (config.darkMode.auto) {
-        return systemColorScheme === 'dark';
+      if (config.darkMode.auto && systemColorScheme) {
+        setIsDarkMode(systemColorScheme === 'dark');
       }
-      return false;
+      return;
     }
 
-    if (followSystem) {
-      return systemColorScheme === 'dark';
+    if (followSystem && systemColorScheme) {
+      setIsDarkMode(systemColorScheme === 'dark');
     }
-
-    return false;
-  };
-
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(getInitialDarkMode);
+  }, []); // Empty deps - only run once on mount
 
   // Update dark mode when system preference changes (if following system)
+  // Only after hydration to avoid mismatch
   useEffect(() => {
-    if (enableDarkMode && followSystem) {
+    if (!isHydrated) return;
+
+    if (enableDarkMode && followSystem && systemColorScheme) {
       setIsDarkMode(systemColorScheme === 'dark');
     }
     // Legacy config support
-    if (config?.darkMode?.enabled && config?.darkMode?.auto) {
+    if (config?.darkMode?.enabled && config?.darkMode?.auto && systemColorScheme) {
       setIsDarkMode(systemColorScheme === 'dark');
     }
-  }, [systemColorScheme, enableDarkMode, followSystem, config?.darkMode?.enabled, config?.darkMode?.auto]);
+  }, [systemColorScheme, enableDarkMode, followSystem, config?.darkMode?.enabled, config?.darkMode?.auto, isHydrated]);
 
   // Notify parent when dark mode changes
   useEffect(() => {
@@ -240,6 +249,14 @@ export function ThemeProvider({
     [enableDarkMode, config?.darkMode?.enabled]
   );
 
+  // Set color scheme (light/dark)
+  const setColorScheme = useCallback(
+    (scheme: 'light' | 'dark') => {
+      setDarkModeValue(scheme === 'dark');
+    },
+    [setDarkModeValue]
+  );
+
   // Build theme
   const theme: ThemeTokens = useMemo(() => {
     // Priority 0: Theme package (highest priority)
@@ -293,10 +310,13 @@ export function ThemeProvider({
     () => ({
       theme,
       isDarkMode,
+      isDark: isDarkMode, // Alias
       toggleDarkMode,
       setDarkMode: setDarkModeValue,
+      setColorScheme, // Alias
+      navigation: themePackage?.navigation,
     }),
-    [theme, isDarkMode, toggleDarkMode, setDarkModeValue]
+    [theme, isDarkMode, toggleDarkMode, setDarkModeValue, setColorScheme, themePackage?.navigation]
   );
 
   return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;

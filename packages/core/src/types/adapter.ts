@@ -395,6 +395,44 @@ export interface ECommerceAdapter {
    * Subscribe to newsletter (guest)
    */
   subscribeToNewsletter(email: string): Promise<void>;
+
+  // ============================================
+  // PAYMENTS
+  // ============================================
+
+  /**
+   * Create a Stripe PaymentIntent on the server
+   * This is used by Apple Pay / Google Pay plugins
+   */
+  createPaymentIntent(params: CreatePaymentIntentInput): Promise<PaymentIntentResult>;
+}
+
+/**
+ * Input for creating a PaymentIntent
+ */
+export interface CreatePaymentIntentInput {
+  /** Amount in smallest currency unit (cents) */
+  amount: number;
+  /** Currency code (e.g., 'USD', 'EUR') */
+  currency: string;
+  /** Order ID to associate with payment */
+  orderId?: string;
+  /** Additional metadata */
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Result from creating a PaymentIntent
+ */
+export interface PaymentIntentResult {
+  /** The client secret for confirming payment on client */
+  clientSecret: string;
+  /** The PaymentIntent ID */
+  paymentIntentId: string;
+  /** Ephemeral key for Stripe Customer (optional) */
+  ephemeralKey?: string;
+  /** Stripe Customer ID (optional) */
+  customerId?: string;
 }
 
 /**

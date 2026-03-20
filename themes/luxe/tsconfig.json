@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-native",
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "typeRoots": [
+      "../../apps/magento/node_modules/@types"
+    ],
+    "paths": {
+      "@ridly/mobile-core": ["../../packages/core/src"],
+      "@ridly/mobile-core/*": ["../../packages/core/src/*"],
+      "react": ["../../apps/magento/node_modules/@types/react"],
+      "react-native": ["../../apps/magento/node_modules/react-native"],
+      "@expo/vector-icons": ["../../apps/magento/node_modules/@expo/vector-icons"],
+      "expo-router": ["../../apps/magento/node_modules/expo-router"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

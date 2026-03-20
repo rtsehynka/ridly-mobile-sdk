@@ -28,3 +28,15 @@ export * from './slots';
 
 // Utils - Week 2+
 export * from './utils';
+
+// Plugins - Premium feature plugins
+export * from './plugins';
+
+// i18n - Internationalization
+export * from './i18n';
+
+// Currency - Multi-currency support
+export * from './currency';
+
+// Config - Centralized configuration
+export * from './config';

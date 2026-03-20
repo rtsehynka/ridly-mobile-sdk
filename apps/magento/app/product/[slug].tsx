@@ -109,16 +109,16 @@ export default function ProductDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
+      <SafeAreaView testID="product-detail-loading" style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
         <Stack.Screen options={{ title: 'Loading...' }} />
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <ActivityIndicator testID="product-loading-indicator" size="large" color={theme.colors.primary} />
       </SafeAreaView>
     );
   }
 
   if (!product) {
     return (
-      <SafeAreaView style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
+      <SafeAreaView testID="product-detail-not-found" style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
         <Stack.Screen options={{ title: 'Not Found' }} />
         <Text variant="body" color="textSecondary">Product not found</Text>
       </SafeAreaView>
@@ -138,7 +138,7 @@ export default function ProductDetailScreen() {
   const isButtonDisabled = !product.inStock || isAddingToCart || (product.options.length > 0 && !allOptionsSelected);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View testID="product-detail-screen" style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Stack.Screen
         options={{
           title: product.name,
@@ -237,7 +237,7 @@ export default function ProductDetailScreen() {
           </View>
 
           {/* Title */}
-          <H1 style={{ marginTop: 12 }}>{product.name}</H1>
+          <H1 testID="product-name" style={{ marginTop: 12 }}>{product.name}</H1>
 
           {/* SKU */}
           <View style={styles.skuRow}>
@@ -261,7 +261,7 @@ export default function ProductDetailScreen() {
 
           {/* Product Options */}
           {product.options.length > 0 && (
-            <Card variant="outlined" style={styles.optionsCard}>
+            <Card testID="product-options-card" variant="outlined" style={styles.optionsCard}>
               <CardContent>
                 <View style={styles.optionsHeader}>
                   <Text variant="label">Select Options</Text>
@@ -289,6 +289,7 @@ export default function ProductDetailScreen() {
                         return (
                           <Pressable
                             key={value.id}
+                            testID={`option-${option.code}-${value.label.toLowerCase().replace(/\s+/g, '-')}`}
                             onPress={() => setSelectedOptions((prev) => ({
                               ...prev,
                               [option.code]: value.label,
@@ -371,6 +372,7 @@ export default function ProductDetailScreen() {
           </View>
           <View style={styles.footerButton}>
             <Pressable
+              testID="add-to-cart-button"
               onPress={handleAddToCart}
               disabled={isButtonDisabled}
               style={[

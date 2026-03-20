@@ -69,6 +69,11 @@ export interface PriceProps {
    * Custom original price text style
    */
   originalPriceStyle?: StyleProp<TextStyle>;
+
+  /**
+   * Test ID for E2E testing
+   */
+  testID?: string;
 }
 
 /**
@@ -92,6 +97,7 @@ export function Price({
   style,
   priceStyle,
   originalPriceStyle,
+  testID,
 }: PriceProps) {
   const { theme } = useTheme();
 
@@ -113,6 +119,7 @@ export function Price({
 
   return (
     <View
+      testID={testID}
       style={[
         {
           flexDirection: layout === 'row' ? 'row' : 'column',

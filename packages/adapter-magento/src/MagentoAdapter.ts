@@ -87,6 +87,13 @@ import {
   DELETE_ADDRESS_MUTATION,
   SUBSCRIBE_NEWSLETTER_MUTATION,
   MERGE_CARTS_MUTATION,
+  // Reviews
+  PRODUCT_REVIEWS_QUERY,
+  CREATE_PRODUCT_REVIEW_MUTATION,
+  REVIEW_METADATA_QUERY,
+  // Related/Upsell Products
+  RELATED_PRODUCTS_QUERY,
+  UPSELL_PRODUCTS_QUERY,
 } from './graphql';
 import {
   transformProduct,
@@ -120,6 +127,7 @@ export class MagentoAdapter implements ECommerceAdapter {
 
   private client: MagentoGraphQLClient;
   private cartId: string | null = null;
+  private cartCreationPromise: Promise<void> | null = null;
 
   constructor(config: MagentoAdapterConfig) {
     this.client = new MagentoGraphQLClient({
@@ -336,41 +344,180 @@ export class MagentoAdapter implements ECommerceAdapter {
     return transformProduct(response.products.items[0]);
   }
 
-  async getRelatedProducts(_productId: string, _limit?: number): Promise<Product[]> {
-    // Related products are included in the product detail query
-    // This is a simplified version - in production you'd want a separate query
-    // TODO: Implement with actual related products from product query
-    return [];
+  async getRelatedProducts(productSku: string, limit?: number): Promise<Product[]> {
+    const response = await this.client.query<{
+      products: {
+        items: Array<{
+          related_products: any[];
+        }>;
+      };
+    }>(RELATED_PRODUCTS_QUERY, { sku: productSku });
+
+    if (!response.products.items.length || !response.products.items[0].related_products) {
+      return [];
+    }
+
+    const relatedProducts = response.products.items[0].related_products
+      .slice(0, limit || 10)
+      .map(transformProduct);
+
+    return relatedProducts;
   }
 
-  async getUpsellProducts(_productId: string, _limit?: number): Promise<Product[]> {
-    // TODO: Implement with actual upsell products from product query
-    return [];
+  async getUpsellProducts(productSku: string, limit?: number): Promise<Product[]> {
+    const response = await this.client.query<{
+      products: {
+        items: Array<{
+          upsell_products: any[];
+        }>;
+      };
+    }>(UPSELL_PRODUCTS_QUERY, { sku: productSku });
+
+    if (!response.products.items.length || !response.products.items[0].upsell_products) {
+      return [];
+    }
+
+    const upsellProducts = response.products.items[0].upsell_products
+      .slice(0, limit || 10)
+      .map(transformProduct);
+
+    return upsellProducts;
   }
 
   async getProductReviews(
-    _productId: string,
+    productSku: string,
     page?: number,
     pageSize?: number
   ): Promise<PaginatedResult<ProductReview>> {
-    // TODO: Implement reviews query
     const actualPage = page || 1;
     const actualPageSize = pageSize || 10;
+
+    const response = await this.client.query<{
+      products: {
+        items: Array<{
+          uid: string;
+          review_count: number;
+          rating_summary: number;
+          reviews: {
+            items: Array<{
+              average_rating: number;
+              created_at: string;
+              nickname: string;
+              summary: string;
+              text: string;
+              ratings_breakdown: Array<{
+                name: string;
+                value: string;
+              }>;
+            }>;
+            page_info: {
+              current_page: number;
+              page_size: number;
+              total_pages: number;
+            };
+          };
+        }>;
+      };
+    }>(PRODUCT_REVIEWS_QUERY, {
+      sku: productSku,
+      pageSize: actualPageSize,
+      currentPage: actualPage,
+    });
+
+    if (!response.products.items.length) {
+      return {
+        items: [],
+        total: 0,
+        page: actualPage,
+        pageSize: actualPageSize,
+        hasMore: false,
+      };
+    }
+
+    const product = response.products.items[0];
+    const reviewsData = product.reviews;
+
+    const reviews: ProductReview[] = reviewsData.items.map((review) => ({
+      id: `${product.uid}-${review.created_at}-${review.nickname}`,
+      productId: product.uid,
+      author: review.nickname,
+      title: review.summary,
+      content: review.text,
+      rating: review.average_rating / 20, // Magento uses 0-100, convert to 0-5
+      createdAt: review.created_at,
+      verified: false, // Magento doesn't expose this
+      helpful: 0,
+      notHelpful: 0,
+    }));
+
     return {
-      items: [],
-      total: 0,
+      items: reviews,
+      total: product.review_count,
       page: actualPage,
       pageSize: actualPageSize,
-      hasMore: false,
+      hasMore: actualPage < reviewsData.page_info.total_pages,
     };
   }
 
+  // Cache for review metadata (rating options)
+  private reviewMetadataCache: { id: string; name: string; values: { value_id: string; value: string }[] }[] | null = null;
+
+  private async getReviewMetadata() {
+    if (this.reviewMetadataCache) {
+      return this.reviewMetadataCache;
+    }
+
+    const response = await this.client.query<{
+      productReviewRatingsMetadata: {
+        items: Array<{
+          id: string;
+          name: string;
+          values: Array<{ value_id: string; value: string }>;
+        }>;
+      };
+    }>(REVIEW_METADATA_QUERY);
+
+    this.reviewMetadataCache = response.productReviewRatingsMetadata.items;
+    return this.reviewMetadataCache;
+  }
+
   async submitProductReview(
-    _productId: string,
-    _review: { title: string; content: string; rating: number }
+    productSku: string,
+    review: { title: string; content: string; rating: number; nickname?: string }
   ): Promise<void> {
-    // TODO: Implement review submission
-    throw new Error('Not implemented: submitProductReview');
+    // Get rating metadata to find the correct rating ID
+    const metadata = await this.getReviewMetadata();
+
+    if (!metadata.length) {
+      throw new Error('Product reviews are not configured on this store');
+    }
+
+    // Use the first rating type (usually "Quality" or "Rating")
+    const ratingMetadata = metadata[0];
+
+    // Convert 1-5 rating to the value_id from metadata
+    // Magento ratings are typically 1-5 with corresponding value_ids
+    const ratingIndex = Math.min(Math.max(Math.round(review.rating), 1), 5) - 1;
+    const ratingValue = ratingMetadata.values[ratingIndex];
+
+    if (!ratingValue) {
+      throw new Error('Invalid rating value');
+    }
+
+    await this.client.query(CREATE_PRODUCT_REVIEW_MUTATION, {
+      input: {
+        sku: productSku,
+        nickname: review.nickname || 'Anonymous',
+        summary: review.title,
+        text: review.content,
+        ratings: [
+          {
+            id: ratingMetadata.id,
+            value_id: ratingValue.value_id,
+          },
+        ],
+      },
+    });
   }
 
   // ============================================
@@ -451,13 +598,40 @@ export class MagentoAdapter implements ECommerceAdapter {
   // CART
   // ============================================
 
+  private async ensureCart(): Promise<void> {
+    if (this.cartId) return;
+
+    // If cart is already being created, wait for it
+    if (this.cartCreationPromise) {
+      console.log('[MagentoAdapter] Waiting for cart creation...');
+      await this.cartCreationPromise;
+      return;
+    }
+
+    // Create cart with mutex to prevent race conditions
+    console.log('[MagentoAdapter] Creating new cart...');
+    this.cartCreationPromise = (async () => {
+      try {
+        const response = await this.client.query<{ createEmptyCart: string }>(
+          CREATE_EMPTY_CART_MUTATION
+        );
+        this.cartId = response.createEmptyCart;
+        console.log('[MagentoAdapter] Created cart:', this.cartId);
+      } finally {
+        this.cartCreationPromise = null;
+      }
+    })();
+
+    await this.cartCreationPromise;
+  }
+
   async getCart(): Promise<Cart> {
+    console.log('[MagentoAdapter.getCart] Current cartId:', this.cartId);
+
+    await this.ensureCart();
+
     if (!this.cartId) {
-      // Create new cart
-      const response = await this.client.query<{ createEmptyCart: string }>(
-        CREATE_EMPTY_CART_MUTATION
-      );
-      this.cartId = response.createEmptyCart;
+      throw new Error('Failed to create cart - cartId is still null');
     }
 
     const response = await this.client.query<{ cart: any }>(GET_CART_QUERY, {
@@ -468,9 +642,16 @@ export class MagentoAdapter implements ECommerceAdapter {
   }
 
   async addToCart(input: AddToCartInput): Promise<Cart> {
+    console.log('[MagentoAdapter.addToCart] Called with cartId:', this.cartId);
+
+    // Ensure we have a cart before adding items
+    await this.ensureCart();
+
     if (!this.cartId) {
-      await this.getCart(); // Creates cart if needed
+      throw new Error('Cannot add to cart - cartId is null after ensureCart()');
     }
+
+    console.log('[MagentoAdapter.addToCart] Adding to cart:', this.cartId);
 
     // Note: For Magento, productId should be the product SKU
     // This is because Magento's addProductsToCart mutation requires SKU
@@ -1005,10 +1186,59 @@ export class MagentoAdapter implements ECommerceAdapter {
     return transformCmsBlock(response.cmsBlocks.items[0]);
   }
 
-  async getBanners(): Promise<Banner[]> {
-    // Magento doesn't have a standard banners API
-    // This would need a custom module or CMS blocks
-    return [];
+  async getBanners(blockIdentifiers?: string[]): Promise<Banner[]> {
+    // Magento uses CMS blocks for banners
+    // Common identifiers: 'homepage-banner', 'promo-banner', 'hero-slider'
+    const defaultIdentifiers = ['homepage-banner', 'hero-banner', 'promo-banner', 'mobile-banner'];
+    const identifiers = blockIdentifiers || defaultIdentifiers;
+
+    try {
+      const response = await this.client.query<{ cmsBlocks: { items: any[] } }>(
+        CMS_BLOCKS_QUERY,
+        { identifiers }
+      );
+
+      if (!response.cmsBlocks.items.length) {
+        return [];
+      }
+
+      // Transform CMS blocks to banners
+      // Expected block content format: HTML with images and links
+      const banners: Banner[] = response.cmsBlocks.items.map((block, index) => {
+        // Parse HTML content to extract image and link
+        const content = block.content || '';
+
+        // Extract image URL from content (common patterns)
+        const imgMatch = content.match(/<img[^>]+src="([^"]+)"[^>]*>/i);
+        const imageUrl = imgMatch ? imgMatch[1] : '';
+
+        // Extract link from content
+        const linkMatch = content.match(/<a[^>]+href="([^"]+)"[^>]*>/i);
+        const link = linkMatch ? linkMatch[1] : '';
+
+        // Extract alt text
+        const altMatch = content.match(/alt="([^"]+)"/i);
+        const altText = altMatch ? altMatch[1] : block.title;
+
+        return {
+          id: block.identifier,
+          title: block.title,
+          imageUrl: imageUrl,
+          imageAlt: altText,
+          link: link,
+          position: index,
+          isActive: true,
+          startDate: undefined,
+          endDate: undefined,
+        };
+      }).filter(banner => banner.imageUrl); // Only return banners with images
+
+      return banners;
+    } catch (error) {
+      // CMS blocks may not exist, return empty array
+      console.warn('Failed to fetch banners:', error);
+      return [];
+    }
   }
 
   // ============================================
@@ -1017,5 +1247,67 @@ export class MagentoAdapter implements ECommerceAdapter {
 
   async subscribeToNewsletter(email: string): Promise<void> {
     await this.client.query(SUBSCRIBE_NEWSLETTER_MUTATION, { email });
+  }
+
+  // ============================================
+  // PAYMENTS
+  // ============================================
+
+  async createPaymentIntent(params: {
+    amount: number;
+    currency: string;
+    orderId?: string;
+    metadata?: Record<string, unknown>;
+  }): Promise<{
+    clientSecret: string;
+    paymentIntentId: string;
+    ephemeralKey?: string;
+    customerId?: string;
+  }> {
+    // This calls a custom Magento REST endpoint that creates a Stripe PaymentIntent
+    // The endpoint should be implemented in Magento with the Stripe module installed
+    //
+    // Example Magento endpoint: POST /rest/V1/stripe/payment-intent
+    // Required Magento extensions:
+    // - StripeIntegration/Payments (official Stripe module for Magento)
+    //
+    // If you're using a different payment provider or custom implementation,
+    // override this method in your adapter configuration.
+
+    const response = await fetch(
+      `${this.client.getBaseUrl()}/rest/V1/stripe/payment-intent`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(this.client.getAuthToken()
+            ? { Authorization: `Bearer ${this.client.getAuthToken()}` }
+            : {}),
+        },
+        body: JSON.stringify({
+          amount: params.amount,
+          currency: params.currency,
+          cart_id: this.cartId,
+          order_id: params.orderId,
+          metadata: params.metadata,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(
+        error.message || `Failed to create PaymentIntent: ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+
+    return {
+      clientSecret: data.client_secret,
+      paymentIntentId: data.payment_intent_id,
+      ephemeralKey: data.ephemeral_key,
+      customerId: data.customer_id,
+    };
   }
 }

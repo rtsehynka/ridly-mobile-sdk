@@ -139,29 +139,52 @@ export const useCartStore = create<CartState>()(
       addItem: async (input) => {
         set({ isLoading: true, error: null });
 
-        try {
-          const adapter = getAdapter();
+        const tryAddToCart = async (retryOnInvalidCart = true): Promise<void> => {
+          try {
+            const adapter = getAdapter();
 
-          // Ensure cart ID is set
-          const { cartId } = get();
-          if (cartId && 'setCartId' in adapter && typeof adapter.setCartId === 'function') {
-            (adapter as any).setCartId(cartId);
+            // Ensure cart ID is set
+            const { cartId } = get();
+            if (cartId && 'setCartId' in adapter && typeof adapter.setCartId === 'function') {
+              (adapter as any).setCartId(cartId);
+            }
+
+            const cart = await adapter.addToCart(input);
+            set({
+              cart,
+              cartId: cart.id,
+              itemCount: cart.itemCount,
+              isLoading: false,
+            });
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            // Check if cart ID is invalid/expired
+            if (retryOnInvalidCart && errorMessage.includes('Could not find a cart')) {
+              console.log('[CartStore] Cart expired, creating new cart and retrying...');
+
+              // Clear invalid cart ID
+              set({ cartId: null, cart: null });
+
+              // Clear cart ID in adapter
+              const adapter = getAdapter();
+              if ('setCartId' in adapter && typeof adapter.setCartId === 'function') {
+                (adapter as any).setCartId(null);
+              }
+
+              // Retry once with a new cart
+              return tryAddToCart(false);
+            }
+
+            set({
+              error: error instanceof Error ? error : new Error('Failed to add item to cart'),
+              isLoading: false,
+            });
+            throw error;
           }
+        };
 
-          const cart = await adapter.addToCart(input);
-          set({
-            cart,
-            cartId: cart.id,
-            itemCount: cart.itemCount,
-            isLoading: false,
-          });
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error : new Error('Failed to add item to cart'),
-            isLoading: false,
-          });
-          throw error;
-        }
+        await tryAddToCart();
       },
 
       updateItemQuantity: async (itemId, quantity) => {

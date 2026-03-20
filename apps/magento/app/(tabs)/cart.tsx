@@ -76,8 +76,8 @@ export default function CartScreen() {
 
   if (!cart || cart.items.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['bottom']}>
-        <View style={styles.emptyContainer}>
+      <SafeAreaView testID="cart-screen-empty" style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['bottom']}>
+        <View testID="empty-cart-container" style={styles.emptyContainer}>
           <Card variant="outlined">
             <CardContent>
               <View style={styles.emptyState}>
@@ -98,8 +98,8 @@ export default function CartScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['bottom']}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView testID="cart-screen" style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['bottom']}>
+      <ScrollView testID="cart-scroll-view" style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           {/* Cart Items */}
           {cart.items.map((item) => (
@@ -205,6 +205,7 @@ export default function CartScreen() {
               </View>
 
               <Pressable
+                testID="checkout-button"
                 onPress={handleCheckout}
                 style={{
                   marginTop: 16,

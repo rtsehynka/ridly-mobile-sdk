@@ -70,6 +70,11 @@ export interface CartItemCardProps {
    * Custom container style
    */
   style?: StyleProp<ViewStyle>;
+
+  /**
+   * Index for list items (used for testID generation)
+   */
+  index?: number;
 }
 
 /**
@@ -102,13 +107,16 @@ export function CartItemCard({
   showRemove = true,
   disabled = false,
   style,
+  index,
 }: CartItemCardProps) {
   const { theme } = useTheme();
 
   const imageSize = 80;
+  const testIDPrefix = index !== undefined ? `cart-item-${index}` : `cart-item-${item.id}`;
 
   return (
     <View
+      testID={index !== undefined ? `cart-item-${index}` : undefined}
       style={[
         {
           flexDirection: 'row',
@@ -213,6 +221,7 @@ export function CartItemCard({
           {/* Remove Button */}
           {showRemove && onRemove && (
             <Pressable
+              testID={index !== undefined ? `remove-item-${index}` : undefined}
               onPress={onRemove}
               disabled={disabled}
               hitSlop={12}
@@ -259,6 +268,7 @@ export function CartItemCard({
               onChange={onQuantityChange}
               size="sm"
               disabled={disabled}
+              testIDPrefix={index !== undefined ? String(index) : undefined}
             />
           )}
         </View>

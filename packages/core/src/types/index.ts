@@ -75,6 +75,8 @@ export type {
   AdapterConfig,
   StoreConfig,
   WishlistItem,
+  CreatePaymentIntentInput,
+  PaymentIntentResult,
 } from './adapter';
 
 // Config types
@@ -113,4 +115,7 @@ export type {
   ThemeScreen,
   ThemeContext as ThemePackageContext,
   CreateStyleOverride,
+  ThemeNavigation,
+  TabBarItem,
+  MenuItem,
 } from './theme-package';

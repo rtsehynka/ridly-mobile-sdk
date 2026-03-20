@@ -1,0 +1,61 @@
+{
+  "actions": {
+    "add": "Add",
+    "remove": "Remove",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "viewAll": "View All",
+    "seeMore": "See More",
+    "seeLess": "See Less",
+    "apply": "Apply",
+    "clear": "Clear",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort"
+  },
+  "status": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "processing": "Processing...",
+    "success": "Success!",
+    "error": "Error",
+    "noResults": "No results found",
+    "empty": "Nothing here yet",
+    "offline": "You are offline"
+  },
+  "labels": {
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "country": "Country",
+    "region": "State/Region",
+    "postalCode": "Postal Code",
+    "required": "Required"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email",
+    "minLength": "Must be at least {{min}} characters",
+    "maxLength": "Must be no more than {{max}} characters",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "Please log in to continue.",
+    "notFound": "Not found"
+  }
+}

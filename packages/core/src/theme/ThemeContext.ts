@@ -14,10 +14,14 @@ import { defaultTheme } from './defaultTheme';
 const defaultContextValue: ThemeContextValue = {
   theme: defaultTheme,
   isDarkMode: false,
+  isDark: false,
   toggleDarkMode: () => {
     console.warn('ThemeProvider not found. Wrap your app with ThemeProvider.');
   },
   setDarkMode: () => {
+    console.warn('ThemeProvider not found. Wrap your app with ThemeProvider.');
+  },
+  setColorScheme: () => {
     console.warn('ThemeProvider not found. Wrap your app with ThemeProvider.');
   },
 };

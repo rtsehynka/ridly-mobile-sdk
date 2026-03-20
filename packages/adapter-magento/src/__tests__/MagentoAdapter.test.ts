@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { MagentoAdapter } from '../MagentoAdapter';
 
-const MAGENTO_URL = 'https://voriagh.gomage.dev';
+const MAGENTO_URL = 'https://magento.ridly.io';
 
 describe('MagentoAdapter', () => {
   let adapter: MagentoAdapter;

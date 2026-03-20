@@ -102,10 +102,12 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView
+      testID="home-screen"
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       edges={['bottom']}
     >
       <ScrollView
+        testID="home-scroll-view"
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -155,6 +157,7 @@ export default function HomeScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text
+                testID="categories-section-title"
                 style={{
                   fontSize: 18,
                   fontWeight: '600',
@@ -250,6 +253,7 @@ export default function HomeScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text
+                testID="featured-section-title"
                 style={{
                   fontSize: 18,
                   fontWeight: '600',
@@ -273,9 +277,10 @@ export default function HomeScreen() {
         )}
 
         {/* New Arrivals Section - reuse same products for demo */}
-        <View style={styles.section}>
+        <View testID="new-arrivals-section" style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text
+              testID="new-arrivals-section-title"
               style={{
                 fontSize: 18,
                 fontWeight: '600',

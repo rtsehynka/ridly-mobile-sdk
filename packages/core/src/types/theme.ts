@@ -3,6 +3,7 @@
  */
 
 import type { ThemeColors, BorderRadiusConfig, SpacingConfig, TypographyConfig } from './config';
+import type { ThemeNavigation } from './theme-package';
 
 /**
  * Complete theme tokens
@@ -26,6 +27,12 @@ export type ThemePreset = 'minimal' | 'bold' | 'elegant' | 'custom';
 export interface ThemeContextValue {
   theme: ThemeTokens;
   isDarkMode: boolean;
+  /** Alias for isDarkMode */
+  isDark: boolean;
   toggleDarkMode: () => void;
   setDarkMode: (enabled: boolean) => void;
+  /** Alias for setDarkMode - sets color scheme ('light' | 'dark') */
+  setColorScheme: (scheme: 'light' | 'dark') => void;
+  /** Navigation configuration from theme package */
+  navigation?: ThemeNavigation;
 }

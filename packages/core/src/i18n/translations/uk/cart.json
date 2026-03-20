@@ -1,0 +1,41 @@
+{
+  "title": "Кошик",
+  "empty": {
+    "title": "Ваш кошик порожній",
+    "description": "Схоже, ви ще нічого не додали в кошик.",
+    "action": "Почати покупки"
+  },
+  "labels": {
+    "subtotal": "Підсумок",
+    "shipping": "Доставка",
+    "tax": "Податок",
+    "discount": "Знижка",
+    "total": "Разом",
+    "freeShipping": "Безкоштовна доставка"
+  },
+  "items": {
+    "zero": "Немає товарів",
+    "one": "{{count}} товар",
+    "few": "{{count}} товари",
+    "many": "{{count}} товарів"
+  },
+  "actions": {
+    "checkout": "Оформити замовлення",
+    "continueShopping": "Продовжити покупки",
+    "applyCoupon": "Застосувати купон",
+    "removeCoupon": "Видалити купон",
+    "updateCart": "Оновити кошик",
+    "clearCart": "Очистити кошик"
+  },
+  "messages": {
+    "itemRemoved": "Товар видалено з кошика",
+    "quantityUpdated": "Кількість оновлено",
+    "couponApplied": "Купон застосовано",
+    "couponRemoved": "Купон видалено",
+    "couponInvalid": "Недійсний код купона"
+  },
+  "coupon": {
+    "placeholder": "Введіть код купона",
+    "apply": "Застосувати"
+  }
+}

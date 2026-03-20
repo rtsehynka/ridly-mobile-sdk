@@ -67,6 +67,9 @@ export {
 // Default themes
 export { defaultTheme, defaultDarkTheme } from './defaultTheme';
 
+// Base theme package (for free SDK)
+export { baseThemePackage } from './baseThemePackage';
+
 // Design tokens
 export {
   defaultColors,

@@ -373,14 +373,21 @@ export function transformCategory(magentoCategory: MagentoCategory): Category {
 }
 
 export function transformCartItem(magentoItem: MagentoCartItem): CartItem {
+  // Get prices from product
+  const priceData = magentoItem.product.price_range.minimum_price;
+  const finalPrice = priceData.final_price;
+  const regularPrice = priceData.regular_price;
+  const hasDiscount = priceData.discount && priceData.discount.percent_off > 0;
+
   return {
     id: magentoItem.uid,
     productId: magentoItem.product.uid,
     sku: magentoItem.product.sku,
     name: magentoItem.product.name,
     quantity: magentoItem.quantity,
-    price: transformMoney(magentoItem.prices.row_total_including_tax),
-    total: transformMoney(magentoItem.prices.row_total_including_tax),
+    price: transformMoney(finalPrice), // Unit price (sale price if discounted)
+    originalPrice: hasDiscount ? transformMoney(regularPrice) : undefined, // Original price if discounted
+    total: transformMoney(magentoItem.prices.row_total_including_tax), // Row total (price * qty)
     image: transformImage(magentoItem.product.small_image, magentoItem.product.name),
   };
 }

@@ -1,0 +1,76 @@
+{
+  "title": "Мій акаунт",
+  "menu": {
+    "profile": "Профіль",
+    "orders": "Мої замовлення",
+    "addresses": "Адреси",
+    "wishlist": "Обране",
+    "settings": "Налаштування",
+    "logout": "Вийти"
+  },
+  "profile": {
+    "title": "Профіль",
+    "personalInfo": "Особиста інформація",
+    "changePassword": "Змінити пароль"
+  },
+  "orders": {
+    "title": "Мої замовлення",
+    "empty": "Ви ще не робили замовлень.",
+    "orderNumber": "Замовлення #{{number}}",
+    "orderDate": "Оформлено {{date}}",
+    "status": {
+      "pending": "Очікується",
+      "processing": "Обробляється",
+      "shipped": "Відправлено",
+      "delivered": "Доставлено",
+      "cancelled": "Скасовано"
+    },
+    "viewDetails": "Деталі",
+    "trackOrder": "Відстежити",
+    "reorder": "Замовити знову"
+  },
+  "addresses": {
+    "title": "Мої адреси",
+    "empty": "Ви ще не зберегли жодної адреси.",
+    "addNew": "Додати нову адресу",
+    "setDefault": "Зробити основною",
+    "defaultBilling": "Основна для рахунків",
+    "defaultShipping": "Основна для доставки"
+  },
+  "wishlist": {
+    "title": "Обране",
+    "empty": "Ваш список обраного порожній.",
+    "moveToCart": "Додати в кошик",
+    "items": {
+      "zero": "Немає товарів",
+      "one": "{{count}} товар",
+      "few": "{{count}} товари",
+      "many": "{{count}} товарів"
+    }
+  },
+  "settings": {
+    "title": "Налаштування",
+    "language": "Мова",
+    "currency": "Валюта",
+    "notifications": "Сповіщення",
+    "darkMode": "Темна тема",
+    "biometric": "Біометричний вхід"
+  },
+  "auth": {
+    "login": "Увійти",
+    "register": "Зареєструватися",
+    "forgotPassword": "Забули пароль?",
+    "resetPassword": "Скинути пароль",
+    "orContinueWith": "Або продовжити з",
+    "alreadyHaveAccount": "Вже маєте акаунт?",
+    "dontHaveAccount": "Ще не маєте акаунта?",
+    "termsAgree": "Продовжуючи, ви погоджуєтесь з Умовами використання та Політикою конфіденційності"
+  },
+  "messages": {
+    "profileUpdated": "Профіль оновлено",
+    "passwordChanged": "Пароль змінено",
+    "addressSaved": "Адресу збережено",
+    "addressDeleted": "Адресу видалено",
+    "loggedOut": "Ви вийшли з акаунта"
+  }
+}

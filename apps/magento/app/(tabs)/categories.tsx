@@ -13,6 +13,7 @@ import {
   Image,
   ActivityIndicator,
   Text as RNText,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -75,7 +76,8 @@ export default function CategoriesScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [searchProducts, setSearchProducts] = useState<Product[]>([]);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [scannerVisible, setScannerVisible] = useState(false);
 
   // Load categories on mount
   useEffect(() => {
@@ -124,7 +126,7 @@ export default function CategoriesScreen() {
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         const result = await magentoAdapter.getProducts({
-          search: searchQuery,
+          searchTerm: searchQuery,
           pageSize: 10,
         });
         setSearchProducts(result.items);
@@ -172,6 +174,12 @@ export default function CategoriesScreen() {
 
   const handleProductPress = (product: Product) => {
     router.push(`/product/${product.slug}`);
+  };
+
+  const handleBarcodeScan = (data: string, type: 'barcode' | 'qr') => {
+    setScannerVisible(false);
+    // Search for the scanned code
+    setSearchQuery(data);
   };
 
   const toggleExpanded = (categoryId: string) => {
@@ -373,9 +381,9 @@ export default function CategoriesScreen() {
   const hasResults = filteredCategories.length > 0 || searchProducts.length > 0;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['bottom']}>
+    <SafeAreaView testID="categories-screen" style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['bottom']}>
       {/* Search Bar */}
-      <View style={{ padding: 12, backgroundColor: theme.colors.surface }}>
+      <View testID="search-bar-container" style={{ padding: 12, backgroundColor: theme.colors.surface }}>
         <View
           style={{
             flexDirection: 'row',
@@ -390,6 +398,7 @@ export default function CategoriesScreen() {
         >
           <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
           <TextInput
+            testID="search-input"
             style={{
               flex: 1,
               fontSize: 16,
@@ -409,8 +418,83 @@ export default function CategoriesScreen() {
               <Ionicons name="close-circle" size={20} color={theme.colors.textSecondary} />
             </Pressable>
           )}
+          {/* Barcode Scanner Button */}
+          <Pressable
+            testID="barcode-scanner-button"
+            onPress={() => setScannerVisible(true)}
+            style={{ marginLeft: 8, padding: 4 }}
+          >
+            <Ionicons name="barcode-outline" size={24} color={theme.colors.primary} />
+          </Pressable>
         </View>
       </View>
+
+      {/* Barcode Scanner Modal */}
+      <Modal
+        visible={scannerVisible}
+        animationType="slide"
+        onRequestClose={() => setScannerVisible(false)}
+      >
+        <View testID="barcode-scanner-modal" style={{ flex: 1, backgroundColor: '#000' }}>
+          {/* Scanner Header */}
+          <View style={{ paddingTop: 60, paddingHorizontal: 20, paddingBottom: 20 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Pressable
+                testID="scanner-close-button"
+                onPress={() => setScannerVisible(false)}
+                style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Ionicons name="close" size={28} color="#fff" />
+              </Pressable>
+              <RNText style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>
+                Scan Barcode
+              </RNText>
+              <View style={{ width: 40 }} />
+            </View>
+          </View>
+
+          {/* Scanner Placeholder */}
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <View
+              style={{
+                width: 250,
+                height: 250,
+                borderWidth: 2,
+                borderColor: 'rgba(255,255,255,0.5)',
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Ionicons name="scan-outline" size={100} color="rgba(255,255,255,0.5)" />
+            </View>
+            <RNText style={{ color: 'rgba(255,255,255,0.8)', marginTop: 24, fontSize: 14, textAlign: 'center' }}>
+              Position the barcode within the frame{'\n'}to scan automatically
+            </RNText>
+          </View>
+
+          {/* Manual Entry Button */}
+          <View style={{ padding: 20, paddingBottom: 50 }}>
+            <Pressable
+              testID="manual-entry-button"
+              onPress={() => {
+                setScannerVisible(false);
+                // Focus search input
+              }}
+              style={{
+                backgroundColor: theme.colors.primary,
+                paddingVertical: 16,
+                borderRadius: 12,
+                alignItems: 'center',
+              }}
+            >
+              <RNText style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                Enter Code Manually
+              </RNText>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
 
       {/* Content */}
       {isLoading ? (

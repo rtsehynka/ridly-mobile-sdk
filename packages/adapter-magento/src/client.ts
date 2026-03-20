@@ -52,6 +52,13 @@ export class MagentoGraphQLClient {
   }
 
   /**
+   * Get base URL for REST API calls
+   */
+  getBaseUrl(): string {
+    return this.config.storeUrl;
+  }
+
+  /**
    * Update client headers with current auth state
    */
   private updateHeaders(): void {

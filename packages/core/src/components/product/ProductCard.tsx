@@ -71,6 +71,16 @@ export interface ProductCardProps {
    * Custom style
    */
   style?: StyleProp<ViewStyle>;
+
+  /**
+   * Test ID for E2E testing
+   */
+  testID?: string;
+
+  /**
+   * Index for list items (used in testID generation)
+   */
+  index?: number;
 }
 
 /**
@@ -95,6 +105,8 @@ export function ProductCard({
   showOutOfStock = true,
   showBrand = false,
   style,
+  testID,
+  index,
 }: ProductCardProps) {
   const { theme } = useTheme();
 
@@ -140,8 +152,12 @@ export function ProductCard({
 
   const isVertical = layout === 'vertical';
 
+  // Generate testID based on index or product id
+  const itemTestID = testID || (index !== undefined ? `product-item-${index}` : `product-${product.id}`);
+
   return (
     <Pressable
+      testID={itemTestID}
       onPress={() => onPress?.(product)}
       style={({ pressed }) => [
         {
@@ -168,6 +184,7 @@ export function ProductCard({
       >
         {imageUrl ? (
           <Image
+            testID={index !== undefined ? `product-image-${index}` : undefined}
             source={{ uri: imageUrl }}
             style={{
               width: '100%',
@@ -236,6 +253,7 @@ export function ProductCard({
 
         {/* Product Name */}
         <Text
+          testID={index !== undefined ? `product-title-${index}` : undefined}
           numberOfLines={2}
           style={{
             fontSize: config.titleSize,
@@ -250,6 +268,7 @@ export function ProductCard({
 
         {/* Price */}
         <Price
+          testID={index !== undefined ? `product-price-${index}` : undefined}
           price={hasDiscount ? product.specialPrice!.amount : product.price.amount}
           originalPrice={hasDiscount ? product.price.amount : undefined}
           currency={product.price.currency}

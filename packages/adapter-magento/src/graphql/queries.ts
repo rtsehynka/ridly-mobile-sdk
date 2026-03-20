@@ -1004,3 +1004,132 @@ export const MERGE_CARTS_MUTATION = `
     }
   }
 `;
+
+// ============================================
+// PRODUCT REVIEWS QUERIES
+// ============================================
+
+/**
+ * Get Product Reviews
+ */
+export const PRODUCT_REVIEWS_QUERY = `
+  query ProductReviews($sku: String!, $pageSize: Int = 10, $currentPage: Int = 1) {
+    products(filter: { sku: { eq: $sku } }) {
+      items {
+        uid
+        reviews(pageSize: $pageSize, currentPage: $currentPage) {
+          items {
+            average_rating
+            created_at
+            nickname
+            summary
+            text
+            ratings_breakdown {
+              name
+              value
+            }
+          }
+          page_info {
+            current_page
+            page_size
+            total_pages
+          }
+        }
+        review_count
+        rating_summary
+      }
+    }
+  }
+`;
+
+/**
+ * Submit Product Review
+ */
+export const CREATE_PRODUCT_REVIEW_MUTATION = `
+  mutation CreateProductReview($input: CreateProductReviewInput!) {
+    createProductReview(input: $input) {
+      review {
+        nickname
+        summary
+        text
+        average_rating
+        ratings_breakdown {
+          name
+          value
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * Get Review Metadata (rating options)
+ */
+export const REVIEW_METADATA_QUERY = `
+  query ReviewMetadata {
+    productReviewRatingsMetadata {
+      items {
+        id
+        name
+        values {
+          value_id
+          value
+        }
+      }
+    }
+  }
+`;
+
+// ============================================
+// RELATED/UPSELL PRODUCTS QUERIES
+// ============================================
+
+/**
+ * Get Related Products with full details
+ */
+export const RELATED_PRODUCTS_QUERY = `
+  query RelatedProducts($sku: String!) {
+    products(filter: { sku: { eq: $sku } }) {
+      items {
+        related_products {
+          ...ProductBasicFields
+        }
+      }
+    }
+  }
+  ${PRODUCT_BASIC_FRAGMENT}
+`;
+
+/**
+ * Get Upsell Products with full details
+ */
+export const UPSELL_PRODUCTS_QUERY = `
+  query UpsellProducts($sku: String!) {
+    products(filter: { sku: { eq: $sku } }) {
+      items {
+        upsell_products {
+          ...ProductBasicFields
+        }
+      }
+    }
+  }
+  ${PRODUCT_BASIC_FRAGMENT}
+`;
+
+/**
+ * Get Crosssell Products with full details
+ */
+export const CROSSSELL_PRODUCTS_QUERY = `
+  query CrosssellProducts($cartId: String!) {
+    cart(cart_id: $cartId) {
+      items {
+        product {
+          crosssell_products {
+            ...ProductBasicFields
+          }
+        }
+      }
+    }
+  }
+  ${PRODUCT_BASIC_FRAGMENT}
+`;

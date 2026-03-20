@@ -1,7 +1,9 @@
 /**
  * RIDLY Mobile Demo - Tab Layout
  *
- * Fashion theme navigation: Home, Browse, Cart, Menu
+ * Dynamically renders tabs based on theme navigation config.
+ * Base theme: Home, Browse, Cart, Profile
+ * Premium theme: Home, Browse, Cart, Menu (burger with Wishlist, Compare, Profile, Settings)
  */
 
 import React, { useState } from 'react';
@@ -13,20 +15,39 @@ import { Tabs, useRouter } from 'expo-router';
 import { useTheme, useCartStore, Text } from '@ridly/mobile-core';
 
 export default function TabLayout() {
-  const { theme } = useTheme();
+  const { theme, navigation } = useTheme();
   const router = useRouter();
   const { itemCount: cartItemCount } = useCartStore();
   const insets = useSafeAreaInsets();
   const [menuVisible, setMenuVisible] = useState(false);
 
-  const menuItems = [
-    { icon: 'heart-outline' as const, label: 'Wishlist', onPress: () => { setMenuVisible(false); router.push('/(tabs)/saved'); } },
-    { icon: 'git-compare-outline' as const, label: 'Compare', onPress: () => { setMenuVisible(false); /* router.push('/compare'); */ } },
-    { icon: 'person-outline' as const, label: 'Profile', onPress: () => { setMenuVisible(false); router.push('/(tabs)/account'); } },
-    { icon: 'settings-outline' as const, label: 'Settings', onPress: () => { setMenuVisible(false); } },
+  // Get navigation config from theme (with fallback for basic navigation)
+  const tabs = navigation?.tabs ?? [
+    { name: 'index', title: 'Home', icon: 'home-outline', iconFocused: 'home' },
+    { name: 'categories', title: 'Browse', icon: 'grid-outline', iconFocused: 'grid' },
+    { name: 'cart', title: 'Cart', icon: 'cart-outline', iconFocused: 'cart', badge: 'cart' as const },
+    { name: 'account', title: 'Profile', icon: 'person-outline', iconFocused: 'person' },
   ];
 
-  // Custom header with logo, search bar and cart icon
+  const menuItems = navigation?.menuItems ?? [];
+  const hasCustomHeader = navigation?.customHeader ?? false;
+  const tabBarStyle = navigation?.tabBarStyle ?? { height: 60, iconSize: 24 };
+
+  // Handle menu item press
+  const handleMenuItemPress = (item: typeof menuItems[0]) => {
+    setMenuVisible(false);
+    if (item.route) {
+      router.push(item.route as any);
+    }
+  };
+
+  // Get badge count for a tab
+  const getBadgeCount = (badge?: 'cart' | 'wishlist' | 'notifications') => {
+    if (badge === 'cart') return cartItemCount;
+    return 0;
+  };
+
+  // Custom header with logo, search bar and cart icon (premium feature)
   const renderHeader = () => (
     <View style={[styles.header, { backgroundColor: theme.colors.background, paddingTop: insets.top + 8 }]}>
       {/* Logo */}
@@ -64,125 +85,120 @@ export default function TabLayout() {
     </View>
   );
 
+  // Check if premium menu is enabled
+  const hasMenu = menuItems.length > 0;
+
   return (
     <>
-    {/* Menu Modal */}
-    <Modal
-      visible={menuVisible}
-      transparent
-      animationType="fade"
-      onRequestClose={() => setMenuVisible(false)}
-    >
-      <Pressable style={styles.modalOverlay} onPress={() => setMenuVisible(false)}>
-        <Pressable style={[styles.menuContainer, { backgroundColor: theme.colors.background, paddingBottom: insets.bottom + 16 }]}>
-          <View style={styles.menuHandle} />
-          <Text variant="label" style={styles.menuTitle}>Menu</Text>
-          {menuItems.map((item, index) => (
-            <Pressable
-              key={index}
-              style={[styles.menuItem, { borderBottomColor: theme.colors.border }]}
-              onPress={item.onPress}
-            >
-              <Ionicons name={item.icon} size={24} color={theme.colors.text} />
-              <Text style={styles.menuItemText}>{item.label}</Text>
-              <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+      {/* Premium: Menu Modal */}
+      {hasMenu && (
+        <Modal
+          visible={menuVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setMenuVisible(false)}
+        >
+          <Pressable style={styles.modalOverlay} onPress={() => setMenuVisible(false)}>
+            <Pressable style={[styles.menuContainer, { backgroundColor: theme.colors.background, paddingBottom: insets.bottom + 16 }]}>
+              <View style={styles.menuHandle} />
+              <Text variant="label" style={styles.menuTitle}>Menu</Text>
+              {menuItems.map((item, index) => (
+                <Pressable
+                  key={index}
+                  style={[styles.menuItem, { borderBottomColor: theme.colors.border }]}
+                  onPress={() => handleMenuItemPress(item)}
+                >
+                  <Ionicons name={item.icon as any} size={24} color={theme.colors.text} />
+                  <Text style={styles.menuItemText}>{item.label}</Text>
+                  <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+                </Pressable>
+              ))}
             </Pressable>
-          ))}
-        </Pressable>
-      </Pressable>
-    </Modal>
+          </Pressable>
+        </Modal>
+      )}
 
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.textSecondary,
-        tabBarStyle: {
-          backgroundColor: theme.colors.background,
-          borderTopColor: theme.colors.border,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '500',
-        },
-        headerStyle: {
-          backgroundColor: theme.colors.background,
-        },
-        headerTintColor: theme.colors.text,
-        headerShadowVisible: false,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
-          ),
-          header: renderHeader,
-        }}
-      />
-      <Tabs.Screen
-        name="categories"
-        options={{
-          title: 'Browse',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={24} color={color} />
-          ),
-          headerTitle: 'Browse',
-        }}
-      />
-      <Tabs.Screen
-        name="cart"
-        options={{
-          title: 'Cart',
-          tabBarIcon: ({ color, focused }) => (
-            <View>
-              <Ionicons name={focused ? 'cart' : 'cart-outline'} size={24} color={color} />
-              {cartItemCount > 0 && (
-                <View style={[styles.tabBadge, { backgroundColor: theme.colors.primary }]}>
-                  <Text style={styles.tabBadgeText}>
-                    {cartItemCount > 9 ? '9+' : cartItemCount}
-                  </Text>
-                </View>
-              )}
-            </View>
-          ),
-          headerTitle: 'Shopping Cart',
-        }}
-      />
-      <Tabs.Screen
-        name="account"
-        options={{
-          title: 'Menu',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="menu-outline" size={24} color={color} />
-          ),
-          headerTitle: 'Menu',
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            setMenuVisible(true);
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: theme.colors.primary,
+          tabBarInactiveTintColor: theme.colors.textSecondary,
+          tabBarStyle: {
+            backgroundColor: theme.colors.background,
+            borderTopColor: theme.colors.border,
+            height: tabBarStyle.height ?? 60,
+            paddingBottom: 8,
+            paddingTop: 8,
           },
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: '500',
+          },
+          headerStyle: {
+            backgroundColor: theme.colors.background,
+          },
+          headerTintColor: theme.colors.text,
+          headerShadowVisible: false,
         }}
-      />
-      {/* Hide unused tabs */}
-      <Tabs.Screen
-        name="saved"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="two"
-        options={{
-          href: null,
-        }}
-      />
-    </Tabs>
+      >
+        {tabs.map((tab) => {
+          const badgeCount = getBadgeCount(tab.badge);
+          const isMenuTab = tab.behavior === 'modal' && hasMenu;
+
+          return (
+            <Tabs.Screen
+              key={tab.name}
+              name={tab.name}
+              options={{
+                title: tab.title,
+                tabBarIcon: ({ color, focused }) => (
+                  <View>
+                    <Ionicons
+                      name={(focused ? tab.iconFocused : tab.icon) as any}
+                      size={tabBarStyle.iconSize ?? 24}
+                      color={color}
+                    />
+                    {badgeCount > 0 && (
+                      <View style={[styles.tabBadge, { backgroundColor: theme.colors.primary }]}>
+                        <Text style={styles.tabBadgeText}>
+                          {badgeCount > 9 ? '9+' : badgeCount}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                ),
+                // Use custom header for home screen if premium theme
+                ...(tab.name === 'index' && hasCustomHeader ? { header: renderHeader } : {}),
+                headerTitle: tab.title,
+              }}
+              listeners={
+                isMenuTab
+                  ? {
+                      tabPress: (e) => {
+                        e.preventDefault();
+                        setMenuVisible(true);
+                      },
+                    }
+                  : undefined
+              }
+            />
+          );
+        })}
+
+        {/* Hidden tabs for navigation */}
+        <Tabs.Screen
+          name="saved"
+          options={{
+            href: null,
+            headerTitle: 'Wishlist',
+          }}
+        />
+        <Tabs.Screen
+          name="two"
+          options={{
+            href: null,
+          }}
+        />
+      </Tabs>
     </>
   );
 }

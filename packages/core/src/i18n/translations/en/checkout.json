@@ -1,0 +1,55 @@
+{
+  "title": "Checkout",
+  "steps": {
+    "shipping": "Shipping",
+    "payment": "Payment",
+    "review": "Review"
+  },
+  "shipping": {
+    "title": "Shipping Address",
+    "selectAddress": "Select Address",
+    "addNewAddress": "Add New Address",
+    "shippingMethod": "Shipping Method",
+    "deliveryEstimate": "Estimated delivery: {{date}}"
+  },
+  "payment": {
+    "title": "Payment Method",
+    "selectMethod": "Select Payment Method",
+    "creditCard": "Credit Card",
+    "applePay": "Apple Pay",
+    "googlePay": "Google Pay",
+    "paypal": "PayPal",
+    "cardNumber": "Card Number",
+    "expiryDate": "Expiry Date",
+    "cvv": "CVV",
+    "nameOnCard": "Name on Card"
+  },
+  "review": {
+    "title": "Order Review",
+    "items": "Order Items",
+    "shippingAddress": "Shipping Address",
+    "billingAddress": "Billing Address",
+    "paymentMethod": "Payment Method",
+    "orderTotal": "Order Total"
+  },
+  "actions": {
+    "placeOrder": "Place Order",
+    "continueToPayment": "Continue to Payment",
+    "continueToReview": "Continue to Review",
+    "editShipping": "Edit Shipping",
+    "editPayment": "Edit Payment"
+  },
+  "success": {
+    "title": "Order Placed!",
+    "message": "Thank you for your order.",
+    "orderNumber": "Order Number: {{number}}",
+    "confirmationEmail": "A confirmation email has been sent to {{email}}",
+    "continueShopping": "Continue Shopping",
+    "viewOrder": "View Order"
+  },
+  "errors": {
+    "paymentFailed": "Payment failed. Please try again.",
+    "invalidAddress": "Please provide a valid shipping address.",
+    "outOfStock": "Some items in your cart are out of stock."
+  }
+}

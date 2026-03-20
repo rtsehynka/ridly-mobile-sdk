@@ -1,0 +1,55 @@
+{
+  "title": "Оформлення",
+  "steps": {
+    "shipping": "Доставка",
+    "payment": "Оплата",
+    "review": "Перегляд"
+  },
+  "shipping": {
+    "title": "Адреса доставки",
+    "selectAddress": "Вибрати адресу",
+    "addNewAddress": "Додати нову адресу",
+    "shippingMethod": "Спосіб доставки",
+    "deliveryEstimate": "Очікувана доставка: {{date}}"
+  },
+  "payment": {
+    "title": "Спосіб оплати",
+    "selectMethod": "Виберіть спосіб оплати",
+    "creditCard": "Кредитна картка",
+    "applePay": "Apple Pay",
+    "googlePay": "Google Pay",
+    "paypal": "PayPal",
+    "cardNumber": "Номер картки",
+    "expiryDate": "Термін дії",
+    "cvv": "CVV",
+    "nameOnCard": "Ім'я на картці"
+  },
+  "review": {
+    "title": "Перегляд замовлення",
+    "items": "Товари",
+    "shippingAddress": "Адреса доставки",
+    "billingAddress": "Адреса для рахунку",
+    "paymentMethod": "Спосіб оплати",
+    "orderTotal": "Сума замовлення"
+  },
+  "actions": {
+    "placeOrder": "Оформити замовлення",
+    "continueToPayment": "Перейти до оплати",
+    "continueToReview": "Перейти до перегляду",
+    "editShipping": "Змінити доставку",
+    "editPayment": "Змінити оплату"
+  },
+  "success": {
+    "title": "Замовлення оформлено!",
+    "message": "Дякуємо за ваше замовлення.",
+    "orderNumber": "Номер замовлення: {{number}}",
+    "confirmationEmail": "Лист-підтвердження надіслано на {{email}}",
+    "continueShopping": "Продовжити покупки",
+    "viewOrder": "Переглянути замовлення"
+  },
+  "errors": {
+    "paymentFailed": "Помилка оплати. Спробуйте ще раз.",
+    "invalidAddress": "Вкажіть дійсну адресу доставки.",
+    "outOfStock": "Деякі товари у вашому кошику відсутні на складі."
+  }
+}

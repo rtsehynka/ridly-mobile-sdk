@@ -14,6 +14,7 @@ export interface CartItem {
   sku: string;
   image: Image;
   price: Money;
+  originalPrice?: Money; // Regular price before discount (if discounted)
   quantity: number;
   total: Money;
   options?: Record<string, string>; // Selected options for configurable products

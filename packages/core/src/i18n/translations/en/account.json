@@ -1,0 +1,75 @@
+{
+  "title": "My Account",
+  "menu": {
+    "profile": "Profile",
+    "orders": "My Orders",
+    "addresses": "Addresses",
+    "wishlist": "Wishlist",
+    "settings": "Settings",
+    "logout": "Log Out"
+  },
+  "profile": {
+    "title": "Profile",
+    "personalInfo": "Personal Information",
+    "changePassword": "Change Password"
+  },
+  "orders": {
+    "title": "My Orders",
+    "empty": "You haven't placed any orders yet.",
+    "orderNumber": "Order #{{number}}",
+    "orderDate": "Placed on {{date}}",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "viewDetails": "View Details",
+    "trackOrder": "Track Order",
+    "reorder": "Reorder"
+  },
+  "addresses": {
+    "title": "My Addresses",
+    "empty": "You haven't saved any addresses yet.",
+    "addNew": "Add New Address",
+    "setDefault": "Set as Default",
+    "defaultBilling": "Default Billing",
+    "defaultShipping": "Default Shipping"
+  },
+  "wishlist": {
+    "title": "My Wishlist",
+    "empty": "Your wishlist is empty.",
+    "moveToCart": "Move to Cart",
+    "items": {
+      "zero": "No items",
+      "one": "{{count}} item",
+      "other": "{{count}} items"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "currency": "Currency",
+    "notifications": "Notifications",
+    "darkMode": "Dark Mode",
+    "biometric": "Biometric Login"
+  },
+  "auth": {
+    "login": "Log In",
+    "register": "Register",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "orContinueWith": "Or continue with",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "termsAgree": "By continuing, you agree to our Terms of Service and Privacy Policy"
+  },
+  "messages": {
+    "profileUpdated": "Profile updated successfully",
+    "passwordChanged": "Password changed successfully",
+    "addressSaved": "Address saved successfully",
+    "addressDeleted": "Address deleted",
+    "loggedOut": "You have been logged out"
+  }
+}

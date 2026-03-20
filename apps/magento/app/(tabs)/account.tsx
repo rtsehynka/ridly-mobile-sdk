@@ -2,9 +2,10 @@
  * RIDLY Mobile Demo - Account Screen
  *
  * Profile menu with account options including Saved Items.
+ * Includes social login integration (Apple/Google).
  */
 
-import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -16,6 +17,7 @@ import {
   Card,
   CardContent,
   useTheme,
+  useToast,
 } from '@ridly/mobile-core';
 import { useState } from 'react';
 
@@ -55,14 +57,29 @@ function MenuItem({ icon, label, onPress, badge }: MenuItemProps) {
 export default function AccountScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { success, error: showError } = useToast();
   const [isLoggedIn] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [socialLoading, setSocialLoading] = useState<string | null>(null);
+
+  const handleSocialLogin = async (provider: string) => {
+    setSocialLoading(provider);
+    try {
+      // Simulate social login
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      success('Login Successful', `Logged in with ${provider}`);
+    } catch {
+      showError('Login Failed', `Could not login with ${provider}`);
+    } finally {
+      setSocialLoading(null);
+    }
+  };
 
   if (!isLoggedIn) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['bottom']}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+      <SafeAreaView testID="account-screen" style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['bottom']}>
+        <ScrollView testID="account-scroll-view" contentContainerStyle={styles.scrollContent}>
           {/* Guest Menu */}
           <View style={[styles.menuSection, { backgroundColor: theme.colors.surface }]}>
             <MenuItem
@@ -113,11 +130,63 @@ export default function AccountScreen() {
               <Button fullWidth variant="outline" onPress={() => {}}>
                 Create Account
               </Button>
+
+              {/* Social Login */}
+              <View testID="social-login-buttons" style={styles.socialSection}>
+                <View style={styles.divider}>
+                  <View style={[styles.dividerLine, { backgroundColor: theme.colors.border }]} />
+                  <Text variant="caption" color="textSecondary" style={styles.dividerText}>
+                    or continue with
+                  </Text>
+                  <View style={[styles.dividerLine, { backgroundColor: theme.colors.border }]} />
+                </View>
+
+                <Pressable
+                  testID="apple-signin-button"
+                  style={[styles.socialButton, { backgroundColor: '#000' }]}
+                  onPress={() => handleSocialLogin('Apple')}
+                  disabled={socialLoading !== null}
+                >
+                  {socialLoading === 'Apple' ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Ionicons name="logo-apple" size={20} color="#fff" />
+                      <Text style={{ color: '#fff', fontWeight: '600', marginLeft: 8 }}>
+                        Continue with Apple
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+
+                <Pressable
+                  testID="google-signin-button"
+                  style={[styles.socialButton, { backgroundColor: '#fff', borderWidth: 1, borderColor: theme.colors.border }]}
+                  onPress={() => handleSocialLogin('Google')}
+                  disabled={socialLoading !== null}
+                >
+                  {socialLoading === 'Google' ? (
+                    <ActivityIndicator size="small" color="#333" />
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: '#4285F4' }}>G</Text>
+                      <Text style={{ color: '#333', fontWeight: '600', marginLeft: 8 }}>
+                        Continue with Google
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
             </CardContent>
           </Card>
 
-          {/* Help Section */}
+          {/* Settings Section */}
           <View style={[styles.menuSection, { backgroundColor: theme.colors.surface }]}>
+            <MenuItem
+              icon="settings-outline"
+              label="Settings"
+              onPress={() => router.push('/settings' as any)}
+            />
             <MenuItem
               icon="help-circle-outline"
               label="Help & Support"
@@ -241,5 +310,17 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     marginHorizontal: 16,
+  },
+  socialSection: {
+    marginTop: 8,
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 12,
   },
 });

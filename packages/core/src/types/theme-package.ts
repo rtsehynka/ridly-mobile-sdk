@@ -10,6 +10,57 @@ import type { StyleOverride, ComponentId } from '../registry/ComponentRegistry';
 import type { SlotId } from '../slots/slots';
 
 /**
+ * Tab bar item configuration
+ */
+export interface TabBarItem {
+  /** Route name */
+  name: string;
+  /** Display title */
+  title: string;
+  /** Icon name (Ionicons) */
+  icon: string;
+  /** Filled icon name when active */
+  iconFocused?: string;
+  /** Whether to show badge (e.g., cart count) */
+  badge?: 'cart' | 'wishlist' | 'notifications';
+  /** Custom behavior instead of navigation */
+  behavior?: 'modal' | 'navigate';
+}
+
+/**
+ * Menu item for burger menu (premium feature)
+ */
+export interface MenuItem {
+  /** Icon name (Ionicons) */
+  icon: string;
+  /** Display label */
+  label: string;
+  /** Route to navigate to */
+  route?: string;
+  /** Custom action identifier */
+  action?: string;
+}
+
+/**
+ * Navigation configuration for the theme
+ */
+export interface ThemeNavigation {
+  /** Tab bar items configuration */
+  tabs: TabBarItem[];
+  /** Menu items for burger menu (premium only) */
+  menuItems?: MenuItem[];
+  /** Tab bar style overrides */
+  tabBarStyle?: {
+    height?: number;
+    showLabels?: boolean;
+    iconSize?: number;
+    animated?: boolean;
+  };
+  /** Whether to show custom header with search */
+  customHeader?: boolean;
+}
+
+/**
  * Screen component that themes can provide
  */
 export interface ThemeScreen {
@@ -122,6 +173,11 @@ export interface RidlyThemePackage {
     splash?: any;
     fonts?: string[];
   };
+
+  /**
+   * Navigation/tab bar configuration
+   */
+  navigation?: ThemeNavigation;
 }
 
 /**

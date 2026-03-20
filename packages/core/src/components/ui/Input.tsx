@@ -22,6 +22,11 @@ export type InputState = 'default' | 'focused' | 'error' | 'success' | 'disabled
 
 export interface InputProps extends Omit<TextInputProps, 'style'> {
   /**
+   * Test ID for E2E testing
+   */
+  testID?: string;
+
+  /**
    * Input label
    */
   label?: string;
@@ -101,6 +106,7 @@ export interface InputProps extends Omit<TextInputProps, 'style'> {
  */
 export const Input = forwardRef<TextInput, InputProps>(function Input(
   {
+    testID,
     label,
     type = 'text',
     placeholder,
@@ -228,6 +234,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
         {/* Text Input */}
         <TextInput
           ref={ref}
+          testID={testID}
           {...props}
           {...getTypeProps()}
           value={value}

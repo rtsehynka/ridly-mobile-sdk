@@ -1,0 +1,38 @@
+{
+  "labels": {
+    "price": "Price",
+    "sku": "SKU",
+    "availability": "Availability",
+    "quantity": "Quantity",
+    "color": "Color",
+    "size": "Size",
+    "description": "Description",
+    "specifications": "Specifications",
+    "relatedProducts": "Related Products"
+  },
+  "status": {
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "lowStock": "Only {{count}} left",
+    "backorder": "Available for backorder"
+  },
+  "actions": {
+    "addToCart": "Add to Cart",
+    "addToWishlist": "Add to Wishlist",
+    "removeFromWishlist": "Remove from Wishlist",
+    "buyNow": "Buy Now",
+    "share": "Share",
+    "compare": "Compare"
+  },
+  "reviews": {
+    "zero": "No reviews",
+    "one": "{{count}} review",
+    "other": "{{count}} reviews"
+  },
+  "messages": {
+    "addedToCart": "Added to cart",
+    "addedToWishlist": "Added to wishlist",
+    "removedFromWishlist": "Removed from wishlist",
+    "selectOptions": "Please select options"
+  }
+}

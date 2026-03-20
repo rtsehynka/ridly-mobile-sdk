@@ -54,6 +54,11 @@ export interface QuantitySelectorProps {
    * Custom container style
    */
   style?: StyleProp<ViewStyle>;
+
+  /**
+   * Test ID prefix for E2E testing
+   */
+  testIDPrefix?: string;
 }
 
 /**
@@ -75,6 +80,7 @@ export function QuantitySelector({
   size = 'md',
   disabled = false,
   style,
+  testIDPrefix,
 }: QuantitySelectorProps) {
   const { theme } = useTheme();
 
@@ -141,6 +147,7 @@ export function QuantitySelector({
     >
       {/* Decrement Button */}
       <Pressable
+        testID={testIDPrefix ? `quantity-decrease-${testIDPrefix}` : 'quantity-decrease'}
         onPress={handleDecrement}
         disabled={!canDecrement}
         style={({ pressed }) => [
@@ -170,6 +177,7 @@ export function QuantitySelector({
         }}
       >
         <Text
+          testID={testIDPrefix ? `cart-item-quantity-${testIDPrefix}` : 'quantity-value'}
           style={{
             fontSize: config.valueFontSize,
             fontWeight: '500',
@@ -182,6 +190,7 @@ export function QuantitySelector({
 
       {/* Increment Button */}
       <Pressable
+        testID={testIDPrefix ? `quantity-increase-${testIDPrefix}` : 'quantity-increase'}
         onPress={handleIncrement}
         disabled={!canIncrement}
         style={({ pressed }) => [

@@ -165,6 +165,7 @@ export function ProductGrid({
           size={cardSize}
           onPress={onProductPress}
           onAddToCart={onAddToCart}
+          index={index}
         />
       </View>
     );
@@ -227,6 +228,7 @@ export function ProductGrid({
 
   return (
     <FlatList
+      testID="product-list"
       data={products}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
@@ -312,12 +314,13 @@ export function ProductRow({
 }: ProductRowProps) {
   const cardWidth = cardSize === 'sm' ? 140 : cardSize === 'lg' ? 200 : 160;
 
-  const renderItem = ({ item }: ListRenderItemInfo<Product>) => (
-    <View style={{ width: cardWidth, marginRight: gap }}>
+  const renderItem = ({ item, index }: ListRenderItemInfo<Product>) => (
+    <View testID={`product-row-item-${index}`} style={{ width: cardWidth, marginRight: gap }}>
       <ProductCard
         product={item}
         size={cardSize}
         onPress={onProductPress}
+        index={index}
       />
     </View>
   );
@@ -338,6 +341,7 @@ export function ProductRow({
 
   return (
     <FlatList
+      testID="product-row"
       data={products}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}

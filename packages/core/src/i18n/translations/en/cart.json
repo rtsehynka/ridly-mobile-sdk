@@ -1,0 +1,40 @@
+{
+  "title": "Shopping Cart",
+  "empty": {
+    "title": "Your cart is empty",
+    "description": "Looks like you haven't added anything to your cart yet.",
+    "action": "Start Shopping"
+  },
+  "labels": {
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "tax": "Tax",
+    "discount": "Discount",
+    "total": "Total",
+    "freeShipping": "Free Shipping"
+  },
+  "items": {
+    "zero": "No items",
+    "one": "{{count}} item",
+    "other": "{{count}} items"
+  },
+  "actions": {
+    "checkout": "Proceed to Checkout",
+    "continueShopping": "Continue Shopping",
+    "applyCoupon": "Apply Coupon",
+    "removeCoupon": "Remove Coupon",
+    "updateCart": "Update Cart",
+    "clearCart": "Clear Cart"
+  },
+  "messages": {
+    "itemRemoved": "Item removed from cart",
+    "quantityUpdated": "Quantity updated",
+    "couponApplied": "Coupon applied",
+    "couponRemoved": "Coupon removed",
+    "couponInvalid": "Invalid coupon code"
+  },
+  "coupon": {
+    "placeholder": "Enter coupon code",
+    "apply": "Apply"
+  }
+}
