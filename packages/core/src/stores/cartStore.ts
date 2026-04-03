@@ -117,11 +117,14 @@ export const useCartStore = create<CartState>()(
 
           // Restore cart ID to adapter if we have one
           const { cartId } = get();
+          console.log('[CartStore.fetchCart] Starting, stored cartId:', cartId);
           if (cartId && 'setCartId' in adapter && typeof adapter.setCartId === 'function') {
+            console.log('[CartStore.fetchCart] Setting cartId in adapter');
             (adapter as any).setCartId(cartId);
           }
 
           const cart = await adapter.getCart();
+          console.log('[CartStore.fetchCart] Got cart:', { id: cart.id, itemCount: cart.itemCount, items: cart.items?.length });
           set({
             cart,
             cartId: cart.id,
@@ -129,6 +132,7 @@ export const useCartStore = create<CartState>()(
             isLoading: false,
           });
         } catch (error) {
+          console.error('[CartStore.fetchCart] Error:', error);
           set({
             error: error instanceof Error ? error : new Error('Failed to fetch cart'),
             isLoading: false,

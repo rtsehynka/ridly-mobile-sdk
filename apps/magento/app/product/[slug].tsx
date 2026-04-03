@@ -95,12 +95,15 @@ export default function ProductDetailScreen() {
     // Use selected variant SKU for configurable products
     const skuToAdd = selectedVariant?.sku ?? product.sku;
 
+    console.log('[ProductDetail] Adding to cart:', { sku: skuToAdd, productSku: product.sku, variantSku: selectedVariant?.sku });
+
     setIsAddingToCart(true);
     try {
       await addItem({ productId: skuToAdd, quantity: 1 });
+      console.log('[ProductDetail] Successfully added to cart');
       success('Added to Cart', `${product.name} has been added to your cart.`);
     } catch (err) {
-      console.error('Failed to add to cart:', err);
+      console.error('[ProductDetail] Failed to add to cart:', err);
       error('Error', 'Failed to add to cart. Please try again.');
     } finally {
       setIsAddingToCart(false);

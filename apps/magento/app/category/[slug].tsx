@@ -50,12 +50,16 @@ export default function CategoryDetailScreen() {
   const loadProducts = useCallback(async (pageNum: number = 1, append: boolean = false) => {
     if (!slug || !category) return;
 
+    console.log('[Category] Loading products for category:', { id: category.id, name: category.name, slug });
+
     try {
       const result = await magentoAdapter.getProducts({
         categoryId: category.id,
         page: pageNum,
         pageSize: 20,
       });
+
+      console.log('[Category] Loaded products:', { count: result.items.length, total: result.total, hasMore: result.hasMore });
 
       if (append) {
         setProducts(prev => [...prev, ...result.items]);

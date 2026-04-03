@@ -19,6 +19,7 @@ import {
   useTheme,
   useToast,
   useCartStore,
+  useConfigStore,
 } from '@ridly/mobile-core';
 
 export default function CartScreen() {
@@ -26,10 +27,17 @@ export default function CartScreen() {
   const { theme } = useTheme();
   const { error, success } = useToast();
   const { cart, isLoading, fetchCart, updateItemQuantity, removeItem } = useCartStore();
+  const { isInitialized } = useConfigStore();
 
   useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+    // Only fetch cart after SDK is initialized
+    if (isInitialized) {
+      console.log('[CartScreen] Fetching cart, isInitialized:', isInitialized);
+      fetchCart().then(() => {
+        console.log('[CartScreen] Cart fetched, items:', cart?.items?.length ?? 0);
+      });
+    }
+  }, [fetchCart, isInitialized]);
 
   const handleUpdateQuantity = useCallback(async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) {

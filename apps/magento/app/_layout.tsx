@@ -21,7 +21,7 @@ try {
 }
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { ThemeProvider, ToastContainer, useConfigStore, useTheme } from '@ridly/mobile-core';
+import { ThemeProvider, ToastContainer, useConfigStore, useCartStore, useTheme } from '@ridly/mobile-core';
 
 // Theme loaded from config - falls back to base theme if premium not available
 import { themePackage } from '../lib/theme';
@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
 
 function RootLayoutNav() {
   const { initialize, isInitialized, isInitializing, initError } = useConfigStore();
+  const { cartId } = useCartStore();
 
   // Initialize the SDK with the adapter
   useEffect(() => {
@@ -141,6 +142,14 @@ function RootLayoutNav() {
     };
     initSDK();
   }, [initialize, isInitialized, isInitializing, initError]);
+
+  // Restore cartId to adapter after SDK is initialized
+  useEffect(() => {
+    if (isInitialized && cartId && 'setCartId' in magentoAdapter) {
+      console.log('[RootLayout] Restoring cartId to adapter:', cartId);
+      (magentoAdapter as any).setCartId(cartId);
+    }
+  }, [isInitialized, cartId]);
 
   // Log initialization status for debugging
   useEffect(() => {
